@@ -89,7 +89,7 @@ def notify(context, **kwargs):
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 9, 1),
+    'start_date': datetime(2020, 10, 1),
     'catchup': False
 }    
     
@@ -106,7 +106,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'모델명 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'abc 모델명 크롤링을 시작하였습니다.'},
     queue='q20',
     dag=dag
 )
@@ -121,7 +121,7 @@ crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'모델명 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'abc 모델명 크롤링이 종료되었습니다.'},
     queue='q20',
     dag=dag
 )
