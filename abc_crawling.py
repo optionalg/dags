@@ -129,5 +129,13 @@ end_notify = PythonOperator(
 # 실행 순서 설정
 start_notify >> crawling_code >> end_notify
 
+# 다음과 같이도 가능하다 - set_downstream
+# start_notify.set_downstream(crawling_code)
+# crawling_code.set_downstream(end_notify)
+
+# 다음과 같이도 가능하다 - set_upstream
+# crawling_code.set_upstream(start_notify)
+# end_notify.set_upstream(crawling_code)
+
 
     
