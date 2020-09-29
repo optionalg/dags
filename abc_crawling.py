@@ -1,4 +1,4 @@
-# 공통
+# shared
 import requests
 
 # crawling
@@ -18,7 +18,7 @@ import sys
 import pendulum
 
 # 가져올 카테고리 리스트
-category_name = ['운동화','스포츠','구두','샌들','부츠']
+category_name = ['sneakers','sports','shoes','sandals','boots']
 
 #abc마트에서 신발 모델들을 가져오는 함수
 def get_shoe_model_list():
