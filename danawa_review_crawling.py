@@ -34,8 +34,8 @@ def get_shoes_review():
     danawa_reviews = []
     
     for model_id in model_ids:
-    print(model_id)
-    page_num = 0
+        print(model_id)
+        page_num = 0
 
         while True:
             try:
