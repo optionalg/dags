@@ -19,7 +19,7 @@ import requests
 def get_shoes_info():
 
     brand_info = {
-          'adidas' : '80'
+        'adidas' : '80'
         , 'nike' : '79'
         , 'fila' : '83'
         , 'puma' : '81'
@@ -39,25 +39,25 @@ def get_shoes_info():
     # 크롤링한 신발들의 정보를 담을 리스트
     shoes_info = []
     
-	for b_name, page in list(brand_info.items()):
-		for i in range(1, 10):
-			url = 'https://www.coupang.com/np/categories/187365?listSize=120&brand='+page+'&offerCondition=&filterType=&isPriceRange=false&minPrice=&maxPrice=&page='+str(i)+'&channel=user&fromComponent=N&selectedPlpKeepFilter=&sorter=bestAsc&filter=&rating=0'
-			driver.get(url)
-			driver.implicitly_wait(4)
-			model_ids = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li')
-			model_names = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li/a/dl/dd/div[2]')
-			for q, w in zip(model_ids, model_names):
-				model_id = q.get_attribute('id')
-				model_name = w.text
-				shoes_info.append([b_name, model_id, model_name])
+    for b_name, page in brand_info.items():
+        for i in range(1, 10):
+            url = 'https://www.coupang.com/np/categories/187365?listSize=120&brand='+page+'&offerCondition=&filterType=&isPriceRange=false&minPrice=&maxPrice=&page='+str(i)+'&channel=user&fromComponent=N&selectedPlpKeepFilter=&sorter=bestAsc&filter=&rating=0'
+            driver.get(url)
+            driver.implicitly_wait(4)
+            model_ids = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li')
+            model_names = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li/a/dl/dd/div[2]')
+            for q, w in zip(model_ids, model_names):
+                model_id = q.get_attribute('id')
+                model_name = w.text
+                shoes_info.append([b_name, model_id, model_name])
 
-	filename = '/root/coupang_model_id.csv'
-	f = open(filename, 'w', encoding='utf-8', newline='')
-	csvWriter = csv.writer(f)
-	csvWriter.writerow(['brand', 'model_id', 'model_name'])
-	for i in shoes_info:
-		csvWriter.writerow(i)
-	f.close()
+    filename = '/root/coupang_model_id.csv'
+    f = open(filename, 'w', encoding='utf-8', newline='')
+    csvWriter = csv.writer(f)
+    csvWriter.writerow(['brand', 'model_id', 'model_name'])
+    for i in shoes_info:
+        csvWriter.writerow(i)
+    f.close()
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
