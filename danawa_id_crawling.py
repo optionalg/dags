@@ -93,7 +93,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 9, 1, tzinfo=local_tz),
+    'start_date': datetime(2020, 9, 30, tzinfo=local_tz),
     'catchup': False
 }    
     
@@ -113,7 +113,7 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_args='다나와 모델명 크롤링을 시작하였습니다.',
-    queue='q20',
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 코드 동작
@@ -121,7 +121,7 @@ crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_full_info,
     op_args=brand_page_nubmers,
-    queue='q20',
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -129,19 +129,10 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_args='다나와 모델명 크롤링이 종료되었습니다.',
-    queue='q20',
+    queue='qmaria',
     dag=dag
 )
 
-# abc 크롤링 종료 감지
-sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='abc_model_crawling'
-    , external_task_id='end_notify'
-    #, allowed_states=[State.SUCCESS]
-    , mode='reschedule'
-    , dag=dag
-)
-
 # 실행 순서 설정
-sensor >> start_notify >> crawling_code >> end_notify
+start_notify >> crawling_code >> end_notify
+
