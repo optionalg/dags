@@ -32,6 +32,7 @@ def get_shoes_review():
     model_ids = model_dataframe['model_id']
     
     danawa_reviews = []
+    progress = 0.0
     
     for model_id in model_ids:
         print(model_id)
@@ -52,14 +53,14 @@ def get_shoes_review():
                 review_date = 'None'
                 reviews = 'None'
                 print(review_date, reviews)
+            print(review_date, reviews)
             for q,w in zip(review_date ,reviews):
                 danawa_reviews.append([model_id, q, w])
     
-    # 진행상황 체크                
-    progress = 0.0
-    progress = progress + 1.0
-    progress_check = progress / len(model_ids)
-    notify(str(progress_check))
+        # 진행상황 체크                
+        progress = progress + 1.0
+        progress_check = progress / len(model_ids)
+        notify(str(progress_check))
 
     filename ='/root/danawa_reviews.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
