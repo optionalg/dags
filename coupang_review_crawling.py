@@ -63,7 +63,13 @@ def get_shoes_review():
                     coupang_reviews.append([rn.text, rd.text, bpi.text, rr.text])
                 for rn, rd, bpi, ms, fa, mp in zip(review_name, review_day, buy_product_info, my_size, foot_Areview, my_pdsize):
                     coupang_review_info.append([rn.text, rd.text, bpi.text,ms.text, fa.text,mp.text])
-                    
+    
+    # 진행상황 체크                
+    progress = 0.0
+    progress = progress + 1.0
+    progress_check = progress / len(model_ids)
+    notify(str(progress_check))
+    
     driver.close()
 
     Refilename ='coupang_reviews.csv'

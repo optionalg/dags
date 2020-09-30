@@ -51,6 +51,12 @@ def get_shoes_review():
                 pass
             for q,w in zip(review_date ,reviews):
                 danawa_reviews.append([model_id, q.text, w.text])
+    
+    # 진행상황 체크                
+    progress = 0.0
+    progress = progress + 1.0
+    progress_check = progress / len(model_ids)
+    notify(str(progress_check))
 
     filename ='/root/danawa_reviews.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
