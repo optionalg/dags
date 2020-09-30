@@ -48,7 +48,9 @@ def get_shoes_review():
                 if no_data != None:
                     break
             except:
-                pass
+                review_date = 'None'
+                reviews = 'None'
+                print(review_date, reviews)
             for q,w in zip(review_date ,reviews):
                 danawa_reviews.append([model_id, q.text, w.text])
     
