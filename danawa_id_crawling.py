@@ -71,7 +71,7 @@ def get_shoes_full_info(brand_page_nubmers):
     driver.close()
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context): 
+def notify(context, *args): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
