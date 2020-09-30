@@ -84,18 +84,20 @@ def notify(context, **kwargs):
             'message' : context
         }
     )
-    
+# 서울 시간 기준으로 변경
+local_tz = pendulum.timezone('Asia/Seoul')
+
 # airflow DAG설정        
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 1),
+    'start_date': datetime(2020, 11, 1, tzinfo=local_tz),
     'catchup': False
 }    
     
 # DAG인스턴스 생성
 dag = DAG(
-      dag_id='model_crawling'
+      dag_id='abc_model_crawling'
     # DAG 설정을 넣어줌
     , default_args=default_args
     , max_active_runs=1

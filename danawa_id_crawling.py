@@ -13,6 +13,7 @@ import csv
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
@@ -132,5 +133,15 @@ end_notify = PythonOperator(
     dag=dag
 )
 
+# abc 크롤링 종료 감지
+sensor = ExternalTaskSensor(
+      task_id='external_sensor'
+    , external_dag_id='abc_model_crawling'
+    , external_task_id='end_notify'
+    #, allowed_states=[State.SUCCESS]
+    , mode='reschedule'
+    , dag=dag
+)
+
 # 실행 순서 설정
-start_notify >> crawling_code >> end_notify
+sensor >> start_notify >> crawling_code >> end_notify
