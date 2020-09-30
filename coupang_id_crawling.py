@@ -39,7 +39,7 @@ def get_shoes_info():
     # 크롤링한 신발들의 정보를 담을 리스트
     shoes_info = []
     
-	for b_name, page in brand_info.items():
+	for b_name, page in brand_info.items() :
 		for i in range(1, 10):
 			url = 'https://www.coupang.com/np/categories/187365?listSize=120&brand='+page+'&offerCondition=&filterType=&isPriceRange=false&minPrice=&maxPrice=&page='+str(i)+'&channel=user&fromComponent=N&selectedPlpKeepFilter=&sorter=bestAsc&filter=&rating=0'
 			driver.get(url)
