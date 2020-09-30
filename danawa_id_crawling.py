@@ -21,9 +21,9 @@ import pendulum
 # 신발 정보 가져오는 함수
 def get_shoes_full_info():
 
-# 13876=나이키, 10851=아디다스, 13770=리복, 13760=뉴발란스, 10789=휠라, 12042=푸마, 10719=호킨스, 10986=컨버스, 10720=반스
-brand_page_nubmers = ['13876', '10851', '13770', '13760', '10789', '12042', '10719', '10986', '10720']
-# brand_names = ['nike','adidas','reebok','newbalance','fila','puma','hokins','converse','vans']
+    # 13876=나이키, 10851=아디다스, 13770=리복, 13760=뉴발란스, 10789=휠라, 12042=푸마, 10719=호킨스, 10986=컨버스, 10720=반스
+    brand_page_nubmers = ['13876', '10851', '13770', '13760', '10789', '12042', '10719', '10986', '10720']
+    # brand_names = ['nike','adidas','reebok','newbalance','fila','puma','hokins','converse','vans']
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()

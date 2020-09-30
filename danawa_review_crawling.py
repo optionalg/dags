@@ -52,7 +52,7 @@ def get_shoes_review():
                 reviews = 'None'
                 print(review_date, reviews)
             for q,w in zip(review_date ,reviews):
-                danawa_reviews.append([model_id, q.text, w.text])
+                danawa_reviews.append([model_id, q, w])
     
     # 진행상황 체크                
     progress = 0.0
