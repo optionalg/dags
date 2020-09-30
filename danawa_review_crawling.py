@@ -61,7 +61,7 @@ def get_shoes_review():
     driver.close()
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, *args): 
+def notify(context, **kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -102,7 +102,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_args='다나와 리뷰 크롤링을 시작하였습니다.',
+    op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
     queue='qmaria',
     dag=dag
 )
@@ -117,7 +117,7 @@ crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_args='다나와 리뷰 크롤링이 종료되었습니다.',
+    op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
     queue='qmaria',
     dag=dag
 )

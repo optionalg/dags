@@ -23,7 +23,7 @@ brand_page_nubmers = ['13876', '10851', '13770', '13760', '10789', '12042', '107
 # brand_names = ['nike','adidas','reebok','newbalance','fila','puma','hokins','converse','vans']
 
 # 신발 정보 가져오는 함수
-def get_shoes_full_info(brand_page_nubmers):
+def get_shoes_full_info(brand_page_nubmers, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -71,7 +71,7 @@ def get_shoes_full_info(brand_page_nubmers):
     driver.close()
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, *args): 
+def notify(context, **kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -112,7 +112,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_args='다나와 모델명 크롤링을 시작하였습니다.',
+    op_kwargs={'context':'다나와 모델명 크롤링을 시작하였습니다.'},
     queue='qmaria',
     dag=dag
 )
@@ -128,7 +128,7 @@ crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_args='다나와 모델명 크롤링이 종료되었습니다.',
+    op_kwargs={'context':'다나와 모델명 크롤링이 종료되었습니다.'},
     queue='qmaria',
     dag=dag
 )
