@@ -23,7 +23,7 @@ brand_page_nubmers = ['13876', '10851', '13770', '13760', '10789', '12042', '107
 # brand_names = ['nike','adidas','reebok','newbalance','fila','puma','hokins','converse','vans']
 
 # 신발 정보 가져오는 함수
-def get_shoes_full_info(brand_page_nubmers, **kwargs):
+def get_shoes_full_info():
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -120,7 +120,6 @@ start_notify = PythonOperator(
 crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_full_info,
-    op_args=brand_page_nubmers,
     queue='qmaria',
     dag=dag
 )
