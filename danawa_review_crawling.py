@@ -26,7 +26,7 @@ def get_shoes_review():
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 
-    danawa_model_id_path = '/root/damawa_model_id.csv'
+    danawa_model_id_path = '/root/danawa_model_id.csv'
     model_dataframe = pd.read_csv(danawa_model_id_path)
     model_ids = model_dataframe['model_id']
     
@@ -38,7 +38,7 @@ def get_shoes_review():
         while True:
             try:
                 page_num = page_num+1
-                url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(modelId)+'&cate1Code=1824&page='+str(page_num)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
+                url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(model_id)+'&cate1Code=1824&page='+str(page_num)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
                 driver.get(url)
                 time.sleep(3)
                 review_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
@@ -48,7 +48,7 @@ def get_shoes_review():
                     break
             except:
                 pass
-            for q,w in zip(review_date,reviews):
+            for q,w in zip(review_date ,reviews):
                 danawa_reviews.append([model_id, q.text, w.text])
 
     filename ='danawa_reviews.csv'
