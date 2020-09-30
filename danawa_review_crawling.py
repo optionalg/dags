@@ -25,7 +25,8 @@ def get_shoes_review():
     options.add_argument('--disable-gpu')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-
+    
+    # model_id 불러오기
     danawa_model_id_path = '/root/danawa_model_id.csv'
     model_dataframe = pd.read_csv(danawa_model_id_path)
     model_ids = model_dataframe['model_id']
@@ -51,7 +52,7 @@ def get_shoes_review():
             for q,w in zip(review_date ,reviews):
                 danawa_reviews.append([model_id, q.text, w.text])
 
-    filename ='danawa_reviews.csv'
+    filename ='/root/danawa_reviews.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['model_id','review_date','reviews'])
