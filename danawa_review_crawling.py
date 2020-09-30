@@ -83,7 +83,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 11, 1, tzinfo=local_tz),
+    'start_date': datetime(2020, 9, 1, tzinfo=local_tz),
     'catchup': False
 }    
     
@@ -96,7 +96,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(days=1)
+    , schedule_interval=timedelta(days=7)
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(
