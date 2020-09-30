@@ -61,7 +61,7 @@ def get_shoes_full_info():
                 shoes_full_info.append([brand, model_id, model_name, model_category, model_info])
                 
     # 브랜드이름 파일명으로 저장
-    filename = 'danawa_model_id.csv'
+    filename = '/root/danawa_model_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['brand','model_id','model_name','model_category','model_info'])

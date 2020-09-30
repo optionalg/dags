@@ -26,7 +26,7 @@ def get_shoes_review():
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 
-    danawa_model_id_path = f'./damawa_model_id.csv'
+    danawa_model_id_path = '/root/damawa_model_id.csv'
     model_dataframe = pd.read_csv(danawa_model_id_path)
     model_ids = model_dataframe['model_id']
     
