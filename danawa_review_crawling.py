@@ -186,7 +186,7 @@ start_notify = PythonOperator(
 # 크롤링 코드 동작
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
-    python_callable=get_shoes_info,
+    python_callable=get_shoes_full_info,
     queue='q24',
     dag=dag
 )
