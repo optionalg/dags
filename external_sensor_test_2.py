@@ -74,7 +74,7 @@ sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='sensor_test_1'
     , external_task_id='end_notify'
-    , execution_date_fn=lambda dt: dt + timedelta(minutes=1)
+    , execution_delta=timedelta(minutes=1)
     , dag=dag
 )
 

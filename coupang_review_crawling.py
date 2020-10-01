@@ -11,15 +11,59 @@ import csv
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
 import requests
 
+# 쿠팡 모델명, ID 뽑기
+def get_shoes_info():
+
+    brand_info = {
+        'adidas' : '80'
+        , 'nike' : '79'
+        , 'fila' : '83'
+        , 'puma' : '81'
+        , 'newbalance' : '84'
+        , 'reebok' : '85'
+        , 'converse' : '86'
+    }
+
+    # 크롬 드라이버 옵션
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
+    driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
+    
+    # 크롤링한 신발들의 정보를 담을 리스트
+    shoes_info = []
+    
+    for b_name, page in brand_info.items():
+        for i in range(1, 10):
+            url = 'https://www.coupang.com/np/categories/187365?listSize=120&brand='+page+'&offerCondition=&filterType=&isPriceRange=false&minPrice=&maxPrice=&page='+str(i)+'&channel=user&fromComponent=N&selectedPlpKeepFilter=&sorter=bestAsc&filter=&rating=0'
+            driver.get(url)
+            driver.implicitly_wait(4)
+            model_ids = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li')
+            model_names = driver.find_elements_by_xpath('/html/body/div[2]/section/form/div/div/div[1]/div/ul/li/a/dl/dd/div[2]')
+            for q, w in zip(model_ids, model_names):
+                model_id = q.get_attribute('id')
+                model_name = w.text
+                shoes_info.append([b_name, model_id, model_name])
+
+    filename = '/root/reviews/coupang_model_id.csv'
+    f = open(filename, 'w', encoding='utf-8', newline='')
+    csvWriter = csv.writer(f)
+    csvWriter.writerow(['brand', 'model_id', 'model_name'])
+    for i in shoes_info:
+        csvWriter.writerow(i)
+    f.close()
+    driver.close()
+    
 def get_shoes_review():
     # model_id 불러오기
-    coupang_model_id_path = './coopang_model_id.csv'
+    coupang_model_id_path = '/root/reviews/coupang_model_id.csv'
     model_dataframe = pd.read_csv(coupang_model_id_path)
     model_ids = model_dataframe['model_id']
 
@@ -44,7 +88,6 @@ def get_shoes_review():
             time.sleep(3)
             try:
                 end_point = driver.find_element_by_css_selector('body > div.sdp-review__article__no-review.sdp-review__article__no-review--active')
-                print(end_point)
                 break
             except:
                 pass
@@ -63,17 +106,30 @@ def get_shoes_review():
                     coupang_reviews.append([rn.text, rd.text, bpi.text, rr.text])
                 for rn, rd, bpi, ms, fa, mp in zip(review_name, review_day, buy_product_info, my_size, foot_Areview, my_pdsize):
                     coupang_review_info.append([rn.text, rd.text, bpi.text,ms.text, fa.text,mp.text])
-    
-    # 진행상황 체크                
-    progress = 0.0
-    progress = progress + 1.0
-    progress_check = progress / len(model_ids)
-    notify(str(progress_check))
+        """
+        # 진행상황 체크                
+        progress = progress + 1.0
+        progress_percent = (progress * 100) / float(len(model_ids))
+        progress_check = f'{progress_percent:.2f}% 완료되었습니다.'
+        TARGET_URL = 'https://notify-api.line.me/api/notify'
+        TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
+
+        # 요청합니다.
+        requests.post(
+            TARGET_URL
+            , headers={
+                'Authorization' : 'Bearer ' + TOKEN
+            }
+            , data={
+                'message' : progress_check
+            }
+        )
+        """
     
     driver.close()
 
-    Refilename ='coupang_reviews.csv'
-    Sifilename ='coupang_review_info.csv'
+    Refilename ='/root/reviews/coupang_reviews.csv'
+    Sifilename ='/root/reviews/coupang_review_info.csv'
 
     f = open(Refilename, 'w', encoding='utf-8', newline='')
     j = open(Sifilename, 'w', encoding='utf-8', newline='')
@@ -132,33 +188,33 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'쿠팡 리뷰 크롤링을 시작하였습니다.'},
-    queue='qmaria',
+    queue='q23',
     dag=dag
 )
 # 크롤링 코드 동작
-crawling_code = PythonOperator(
-    task_id='review_crawling',
-    python_callable=get_shoes_review,
-    queue='qmaria',
+id_crawling_code = PythonOperator(
+    task_id='id_crawling',
+    python_callable=get_shoes_info,
+    queue='q23',
     dag=dag
 )
+
+# 크롤링 코드 동작
+review_crawling_code = PythonOperator(
+    task_id='review_crawling',
+    python_callable=get_shoes_review,
+    queue='q23',
+    dag=dag
+)
+
 # 크롤링 종료 알림
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'쿠팡 리뷰 크롤링이 종료되었습니다.'},
-    queue='qmaria',
+    queue='q23',
     dag=dag
 )
 
-# id 크롤링 종료 감지
-sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='coupang_id_crawling'
-    , external_task_id='end_notify'
-    , execution_date_fn=lambda dt: dt + timedelta(minutes=1)
-    , dag=dag
-)
-
 # 실행 순서 설정
-sensor >> start_notify >> crawling_code >> end_notify
+start_notify >> id_crawling_code >> review_crawling_code >> end_notify
