@@ -1,7 +1,7 @@
 # crawling
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import keys
+from selenium.webdriver.common.keys import Keys
 import re
 import time
 import csv
