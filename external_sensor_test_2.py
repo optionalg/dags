@@ -45,7 +45,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=1)
+    , schedule_interval='* * * * *'
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(

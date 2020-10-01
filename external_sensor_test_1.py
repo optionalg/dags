@@ -45,7 +45,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=1)
+    , schedule_interval='@hourly'
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(
@@ -67,15 +67,6 @@ end_notify = PythonOperator(
     python_callable=notify,
     op_kwargs={'context':'1번 종료'},
     dag=dag
-)
-
-# id 크롤링 종료 감지
-sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='danawa_id_crawling'
-    , external_task_id='end_notify'
-    , execution_date_fn=lambda dt: dt + timedelta(minutes=1)
-    , dag=dag
 )
 
 
