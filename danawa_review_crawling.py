@@ -32,11 +32,11 @@ def get_shoes_review():
     model_ids = model_dataframe['model_id']
     
     danawa_reviews = []
-    progress = 0.0
+    progress = 0
     
     for model_id in model_ids:
         print(model_id)
-        page_num = 0
+        page_num = 0.0
 
         while True:
             try:
@@ -55,11 +55,12 @@ def get_shoes_review():
                 print(review_date, reviews)
             print(review_date, reviews)
             for q,w in zip(review_date ,reviews):
-                danawa_reviews.append([model_id, q, w])
+                danawa_reviews.append([model_id, q.text, w.text])
     
         # 진행상황 체크                
         progress = progress + 1.0
-        progress_check = f'{str((progress * 100) / float(len(model_ids)))}% 완료'
+        progress_percent = (progress * 100) / float(len(model_ids))
+        progress_check = f'{progress_percent:.2f}% 완료되었습니다.'
         TARGET_URL = 'https://notify-api.line.me/api/notify'
         TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -70,7 +71,7 @@ def get_shoes_review():
                 'Authorization' : 'Bearer ' + TOKEN
             }
             , data={
-                'message' : context
+                'message' : progress_check
             }
         )
         
