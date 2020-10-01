@@ -59,9 +59,21 @@ def get_shoes_review():
     
         # 진행상황 체크                
         progress = progress + 1.0
-        progress_check = progress / len(model_ids)
-        notify(str(progress_check))
+        progress_check = f'{str((progress * 100) / float(len(model_ids)))}% 완료'
+        TARGET_URL = 'https://notify-api.line.me/api/notify'
+        TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
+        # 요청합니다.
+        requests.post(
+            TARGET_URL
+            , headers={
+                'Authorization' : 'Bearer ' + TOKEN
+            }
+            , data={
+                'message' : context
+            }
+        )
+        
     filename ='/root/danawa_reviews.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
