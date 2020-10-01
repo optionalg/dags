@@ -109,14 +109,14 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'abc 모델명 크롤링을 시작하였습니다.'},
-    queue='q20',
+    queue='q22',
     dag=dag
 )
 # 크롤링 코드 동작
 crawling_code = PythonOperator(
     task_id='crawling_code',
     python_callable=get_shoe_model_list,
-    queue='q20',
+    queue='q22',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -124,7 +124,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'abc 모델명 크롤링이 종료되었습니다.'},
-    queue='q20',
+    queue='q22',
     dag=dag
 )
 
