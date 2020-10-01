@@ -51,12 +51,11 @@ def get_shoes_review():
                 if no_data != None:
                     break
             except:
-                review_date = 'None'
-                reviews = 'None'
-                print(review_date, reviews)
-            print(review_date, reviews)
+                pass
             for q,w in zip(review_date ,reviews):
-                danawa_reviews.append([model_id, q.text, w.text])
+                date = q.text
+                review = w.text
+                danawa_reviews.append([model_id, date, review])
     
         # 진행상황 체크                
         progress = progress + 1.0
