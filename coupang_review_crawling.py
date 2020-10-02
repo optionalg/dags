@@ -77,6 +77,8 @@ def get_shoes_review():
     options.add_argument("--disable-gpu")
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
+    progress = 0.0
+    
     for j in model_ids:
         page = 0
         
