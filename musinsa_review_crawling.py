@@ -101,23 +101,23 @@ def get_shoes_review():
                 for q,w,e,r in zip(model_rvw_date,model_name,model_cust_buy_size,model_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
 
-        # 진행상황 체크                
-        progress = progress + 1.0
-        progress_percent = (progress * 100) / float(len(model_ids))
-        progress_check = f'무신사{style} 크롤링 {progress_percent:.2f}% 완료되었습니다.'
-        TARGET_URL = 'https://notify-api.line.me/api/notify'
-        TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
+            # 진행상황 체크                
+            progress = progress + 1.0
+            progress_percent = (progress * 100) / float(len(model_ids))
+            progress_check = f'무신사{style} 크롤링 {progress_percent:.2f}% 완료되었습니다.'
+            TARGET_URL = 'https://notify-api.line.me/api/notify'
+            TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
-        # 요청합니다.
-        requests.post(
-            TARGET_URL
-            , headers={
-                'Authorization' : 'Bearer ' + TOKEN
-            }
-            , data={
-                'message' : progress_check
-            }
-        )
+            # 요청합니다.
+            requests.post(
+                TARGET_URL
+                , headers={
+                    'Authorization' : 'Bearer ' + TOKEN
+                }
+                , data={
+                    'message' : progress_check
+                }
+            )
 
 
     Refilename = '/root/reviews/musinsa_reviews.csv'.format(dt.strftime("%Y_%m_%d"))
