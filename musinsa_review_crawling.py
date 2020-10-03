@@ -5,7 +5,6 @@ from selenium import webdriver
 import re
 import time
 import csv
-import datetime as dt
 
 # airflow 
 from airflow import DAG
@@ -120,14 +119,13 @@ def get_shoes_review():
                 }
             )
 
-
-    Refilename = '/root/reviews/musinsa_reviews.csv'.format(dt.strftime("%Y_%m_%d"))
-    f = open(Refilename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['model_date','model_name','model_cust_buy_size','model_size','model_brightness','model_color','model_footwidth','model_ignition','model_rvw'])
-    for w in musinsa_rvw_list:
-        csvWriter.writerow(w)
-    f.close()
+        filename = f'/root/reviews/musinsa_reviews_{style}.csv'
+        f = open(filename, 'w', encoding='utf-8', newline='')
+        csvWriter = csv.writer(f)
+        csvWriter.writerow(['model_date','model_name','model_cust_buy_size','model_size','model_brightness','model_color','model_footwidth','model_ignition','model_rvw'])
+        for w in musinsa_rvw_list:
+            csvWriter.writerow(w)
+        f.close()
     driver.close()
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
