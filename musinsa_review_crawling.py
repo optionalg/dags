@@ -68,6 +68,7 @@ def get_shoes_review():
     
     style_list = ['style','photo','goods']
     musinsa_rvw_list = []
+    progress = 0.0
     for style in style_list:
         for musinsa_model_id in model_ids:
             page_num = 0
