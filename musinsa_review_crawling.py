@@ -159,7 +159,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='coupang_review_crawling'
+      dag_id='musinsa_review_crawling'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
