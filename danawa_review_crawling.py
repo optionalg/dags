@@ -18,7 +18,7 @@ import pendulum
 import requests
 
 # 신발 정보 가져오는 함수
-def get_shoes_full_info():
+def get_shoes_info():
 
     # 13876=나이키, 10851=아디다스, 13770=리복, 13760=뉴발란스, 10789=휠라, 12042=푸마, 10719=호킨스, 10986=컨버스, 10720=반스
     brand_page_nubmers = ['13876', '10851', '13770', '13760', '10789', '12042', '10719', '10986', '10720']
@@ -113,7 +113,7 @@ def get_shoes_review():
         # 진행상황 체크                
         progress = progress + 1.0
         progress_percent = (progress * 100) / float(len(model_ids))
-        progress_check = f'{progress_percent:.2f}% 완료되었습니다.'
+        progress_check = f'다나와 리뷰 크롤링 {progress_percent:.2f}% 완료되었습니다.'
         TARGET_URL = 'https://notify-api.line.me/api/notify'
         TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -179,14 +179,14 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
     queue='q24',
     dag=dag
 )
 # 크롤링 코드 동작
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
-    python_callable=get_shoes_full_info,
+    python_callable=get_shoes_info,
     queue='q24',
     dag=dag
 )
@@ -203,7 +203,7 @@ review_crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
     queue='q24',
     dag=dag
 )

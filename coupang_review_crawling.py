@@ -112,7 +112,7 @@ def get_shoes_review():
         # 진행상황 체크                
         progress = progress + 1.0
         progress_percent = (progress * 100) / float(len(model_ids))
-        progress_check = f'{progress_percent:.2f}% 완료되었습니다.'
+        progress_check = f'쿠팡 리뷰 크롤링 {progress_percent:.2f}% 완료되었습니다.'
         TARGET_URL = 'https://notify-api.line.me/api/notify'
         TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -189,7 +189,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'쿠팡 리뷰 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'쿠팡 크롤링을 시작하였습니다.'},
     queue='q23',
     dag=dag
 )
@@ -213,7 +213,7 @@ review_crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'쿠팡 리뷰 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'쿠팡 크롤링이 종료되었습니다.'},
     queue='q23',
     dag=dag
 )
