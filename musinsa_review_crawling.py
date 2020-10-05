@@ -92,7 +92,7 @@ def get_shoes_review():
                     img_url = img_src.get_attribute('src')
                     img_url_list.append(img_url)
                 try:
-                no_data = driver.find_element_by_class_name('mypage_review_none')
+                    no_data = driver.find_element_by_class_name('mypage_review_none')
                     if no_data != None:
                         break
 
