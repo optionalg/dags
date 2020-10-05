@@ -6,8 +6,11 @@ import re
 import time
 import csv
 
+<<<<<<< HEAD
 # 코드 추가
  
+=======
+>>>>>>> 4563bfca52adb4b3cc03ee3fb8bd56406617d86f
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -78,6 +81,7 @@ def get_shoes_review():
         progress_check = 0
         
         for prod_id in prod_ids:
+            img_prod_name = ''
             page_num = 0
             while True:
                 page_num = page_num + 1
@@ -112,13 +116,16 @@ def get_shoes_review():
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
-            n = 0
-            for url in img_url_list:
-                n = n + 1
-                r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{prod_id}_{n}.jpg', 'wb')
-                file.write(r.content)
-                file.close()
+                
+            if style != 'style':
+                img_prod_name = w.text
+                n = 0
+                for url in img_url_list:
+                    n = n + 1
+                    r = requests.get(url)
+                    file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
+                    file.write(r.content)
+                    file.close()
             
             # 진행상황 체크                
             progress = progress + 1
@@ -212,7 +219,7 @@ review_crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},,
+    op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},
     dag=dag
 )
 
