@@ -57,7 +57,7 @@ def get_shoes_info():
                 
     now = dt.datetime.now()
     nowDate = now.strftime('%Y_%m_%d')
-    filename = '/root/ids/coupang_prod_id_{}.csv'.format(nowDate)
+    filename = '/root/reviews/coupang_prod_id_{}.csv'.format(nowDate)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['brand', 'prod_id', 'prod_name'])
@@ -177,8 +177,8 @@ def get_shoes_review():
     # 텍스트 저장
     now = dt.datetime.now()
     nowDate = now.strftime('%Y_%m_%d')
-    review_filename ='/root/reviews/coupang_reviews_{}.csv'.format(nowDate.strftime("%Y_%m_%d"))
-    cst_filename ='/root/reviews/coupang_cst_{}.csv'.format(nowDate.strftime("%Y_%m_%d"))
+    review_filename ='/root/reviews/coupang_reviews_{}.csv'.format(nowDate)
+    cst_filename ='/root/reviews/coupang_cst_{}.csv'.format(nowDate)
 
     f = open(review_filename, 'w', encoding='utf-8', newline='')
     j = open(cst_filename, 'w', encoding='utf-8', newline='')
@@ -241,18 +241,21 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'쿠팡 크롤링을 시작하였습니다.'},
+    queue='q22',
     dag=dag
 )
 # id 크롤링
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_info,
+    queue='q22',
     dag=dag
 )
 # 리뷰 크롤링
 review_crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=get_shoes_review,
+    queue='q22',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -260,6 +263,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'쿠팡 크롤링이 종료되었습니다.'},
+    queue='q22',
     dag=dag
 )
 

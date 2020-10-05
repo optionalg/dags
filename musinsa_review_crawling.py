@@ -42,8 +42,10 @@ def get_shoes_info():
             prod_brand = e.text
             prod_id = raw_prod_id.split('/')[6]
             prod_info.append([prod_brand, prod_id, prod_name])
-
-    filename = '/root/reviews/musinsa_prod_id.csv'
+            
+    now = dt.datetime.now()
+    nowDate = now.strftime('%Y_%m_%d')
+    filename = '/root/reviews/musinsa_prod_id_{}.csv'.format(nowDate)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['prod_brand', 'prod_id', 'prod_name'])
@@ -55,8 +57,9 @@ def get_shoes_info():
 
 
 def get_shoes_review():
-
-    prod_id_csv = pd.read_csv('/root/reviews/musinsa_prod_id.csv')
+    now = dt.datetime.now()
+    nowDate = now.strftime('%Y_%m_%d')
+    prod_id_csv = pd.read_csv('/root/reviews/musinsa_prod_id_{}.csv'.format(nowDate))
     prod_ids = prod_id_csv['prod_id']
 
     # 크롬 드라이버 옵션
@@ -143,7 +146,7 @@ def get_shoes_review():
                     }
                 )
 
-        filename = f'/root/reviews/musinsa_reviews_{style}.csv'
+        filename = f'/root/reviews/musinsa_reviews_{style}_{nowDate}.csv'
         f = open(filename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
         csvWriter.writerow(['prod_date','prod_name','prod_cust_buy_size','prod_size','prod_brightness','prod_color','prod_footwidth','prod_ignition','prod_rvw'])
@@ -197,18 +200,21 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 크롤링을 시작하였습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # id 크롤링
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_info,
+    queue='qmaria',
     dag=dag
 )
 # 리뷰 크롤링
 review_crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=get_shoes_review,
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -216,6 +222,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},
+    queue='qmaria',
     dag=dag
 )
 

@@ -156,7 +156,7 @@ def get_shoes_review():
             )
 
         
-    filename ='/root/reviews/danawa_reviews.csv'
+    filename ='/root/reviews/danawa_reviews_{}.csv'.format(nowDate)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['prod_id','review_date','reviews'])
@@ -210,18 +210,21 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
+    queue='q23',
     dag=dag
 )
 # id 크롤링
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_info,
+    queue='q23',
     dag=dag
 )
 # 리뷰 크롤링
 review_crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=get_shoes_review,
+    queue='q23',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -229,6 +232,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
+    queue='q23',
     dag=dag
 )
 
