@@ -116,9 +116,7 @@ def get_shoes_review():
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
-                
-            
-            img_prod_name = w.text
+                    img_prod_name = w.text
             n = 0
             for url in img_url_list:
                 n = n + 1
