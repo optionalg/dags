@@ -105,12 +105,10 @@ def get_shoes_review():
     progress_check = 0
     
     for prod_id in prod_ids:
-        print(prod_id)
-        page_num = 0.0
-
+        page = 0
         while True:
             page = page + 1
-            url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(modelId)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
+            url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(prod_id)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
             driver.get(url)
             time.sleep(3)
             rvw_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
@@ -126,7 +124,7 @@ def get_shoes_review():
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                danawa_rvws.append([q.text,w.text,modelId])
+                danawa_rvws.append([q.text,w.text,prod_id])
         n = 1
         for url in img_url_list:
             n = n + 1
