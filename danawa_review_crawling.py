@@ -124,7 +124,7 @@ def get_shoes_review():
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                danawa_rvws.append([q.text,w.text,prod_id])
+                danawa_reviews.append([q.text,w.text,prod_id])
         n = 1
         for url in img_url_list:
             n = n + 1
