@@ -7,7 +7,7 @@ import time
 import csv
 
 # 코드 추가
-# 코드 추가 2 
+ 
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -67,7 +67,7 @@ def get_shoes_review():
     options.add_argument("--disable-gpu")
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
-    style_list = ['style','photo','goods']
+    style_list = ['photo','goods']
 
 
     for style in style_list:
@@ -84,11 +84,11 @@ def get_shoes_review():
                 page_num = page_num + 1
                 url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
                 driver.get(url)
-                prod_rvw_date = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.profile > p > span.date.last')
-                prod_name = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.connect_product.estimate-item > div.connect_review_info > div > a.list_info.p_name')
-                prod_cust_buy_size = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.connect_product.estimate-item > div.connect_review_info > p')
+                prod_rvw_date = driver.find_elements_by_class_name('date')
+                prod_name = driver.find_elements_by_class_name('list_info.p_name')
+                prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
-                prod_rvw = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.pContent > div.summary > div > div.pContent_text > span')
+                prod_rvw = driver.find_elements_by_class_name('content-review')
                 prod_img_list = driver.find_elements_by_class_name('musinsa-gallery-images')
                 for img_src in prod_img_list:
                     img_url = img_src.get_attribute('src')
