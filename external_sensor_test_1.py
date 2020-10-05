@@ -24,7 +24,7 @@ def notify(context, **kwargs):
     )
 
 # 서울 시간 기준으로 변경
-
+# test
 
 local_tz = pendulum.timezone('Asia/Seoul')
 
