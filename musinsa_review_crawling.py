@@ -89,9 +89,6 @@ def get_shoes_review():
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.pContent > div.summary > div > div.pContent_text > span')
                 prod_img_list = driver.find_elements_by_class_name('musinsa-gallery-images')
-                
-                img_prod_name = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.connect_product.estimate-item > div.connect_review_info > div > a.list_info.p_name')              
-                
                 for img_src in prod_img_list:
                     img_url = img_src.get_attribute('src')
                     img_url_list.append(img_url)
@@ -115,14 +112,16 @@ def get_shoes_review():
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
-            n = 0
-            for url in img_url_list:
-                print('work')
-                n = n + 1
-                r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
-                file.write(r.content)
-                file.close()
+                
+            if style != 'style':
+                img_prod_name = w.text
+                n = 0
+                for url in img_url_list:
+                    n = n + 1
+                    r = requests.get(url)
+                    file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
+                    file.write(r.content)
+                    file.close()
             
             # 진행상황 체크                
             progress = progress + 1
