@@ -6,11 +6,7 @@ import re
 import time
 import csv
 
-<<<<<<< HEAD
-# 코드 추가
- 
-=======
->>>>>>> 4563bfca52adb4b3cc03ee3fb8bd56406617d86f
+
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -117,15 +113,15 @@ def get_shoes_review():
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
                 
-            if style != 'style':
-                img_prod_name = w.text
-                n = 0
-                for url in img_url_list:
-                    n = n + 1
-                    r = requests.get(url)
-                    file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
-                    file.write(r.content)
-                    file.close()
+            
+            img_prod_name = w.text
+            n = 0
+            for url in img_url_list:
+                n = n + 1
+                r = requests.get(url)
+                file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
+                file.write(r.content)
+                file.close()
             
             # 진행상황 체크                
             progress = progress + 1
