@@ -7,6 +7,7 @@ import time
 import csv
 
 # 코드 추가
+# 코드 추가 2 
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
