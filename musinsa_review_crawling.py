@@ -211,7 +211,7 @@ review_crawling_code = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},,
+    op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},
     dag=dag
 )
 
