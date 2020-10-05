@@ -56,7 +56,7 @@ def get_shoes_info():
 def get_shoes_review():
 
     prod_id_csv = pd.read_csv('/root/reviews/musinsa_prod_id.csv')
-    prod_ids = prod_id_csv['prod_id']
+    prod_ids = prod_id_csv['prod_id'].head(50)
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -115,7 +115,7 @@ def get_shoes_review():
             for url in img_url_list:
                 n = n + 1
                 r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{prod_id}_{n}.jpg', 'wb')
+                file = open(f'/root/images/musinsa_{style}_{prod_name}_{prod_id}_{n}.jpg', 'wb')
                 file.write(r.content)
                 file.close()
             
