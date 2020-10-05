@@ -55,8 +55,10 @@ def get_shoes_info():
 
 def get_shoes_review():
 
-    model_id_csv = pd.read_csv('/root/reviews/musinsa_model_id.csv')
-    model_ids = model_id_csv['model_id'].head(5)
+    #model_id_csv = pd.read_csv('/root/reviews/musinsa_model_id.csv')
+    # test용 코드
+    model_id_csv = pd.read_csv('/root/reviews/musinsa_test.csv')
+    model_ids = model_id_csv['model_id']
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -77,6 +79,7 @@ def get_shoes_review():
         progress_check = 0
         
         for model_id in model_ids:
+            img_model_name = ''
             page_num = 0
             while True:
                 page_num = page_num + 1
@@ -88,6 +91,9 @@ def get_shoes_review():
                 model_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 model_rvw = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.pContent > div.summary > div > div.pContent_text > span')
                 model_img_list = driver.find_elements_by_class_name('musinsa-gallery-images')
+                
+                img_model_name = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.connect_modeluct.estimate-item > div.connect_review_info > div > a.list_info.p_name')              
+                
                 for img_src in model_img_list:
                     img_url = img_src.get_attribute('src')
                     img_url_list.append(img_url)
@@ -116,7 +122,7 @@ def get_shoes_review():
                 print('work')
                 n = n + 1
                 r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{model_name}_{model_id}_{n}.jpg', 'wb')
+                file = open(f'/root/images/musinsa_{style}_{img_model_name}_{model_id}_{n}.jpg', 'wb')
                 file.write(r.content)
                 file.close()
             
