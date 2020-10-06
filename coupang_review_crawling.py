@@ -39,7 +39,7 @@ def get_shoes_info():
     options.add_argument('--disable-gpu')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
+    # 재익이
     # 크롤링한 신발들의 정보를 담을 리스트
     shoes_info = []
     
