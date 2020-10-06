@@ -116,12 +116,11 @@ def get_shoes_review():
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
-                    img_prod_name = w.text
             n = 0
             for url in img_url_list:
                 n = n + 1
                 r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{img_prod_name}_{prod_id}_{n}.jpg', 'wb')
+                file = open(f'/root/images/musinsa_{style}_{prod_id}_{n}.jpg', 'wb')
                 file.write(r.content)
                 file.close()
             
@@ -199,21 +198,21 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 크롤링을 시작하였습니다.'},
-    queue='qmaria',
+    queue='q24',
     dag=dag
 )
 # id 크롤링
 id_crawling_code = PythonOperator(
     task_id='id_crawling',
     python_callable=get_shoes_info,
-    queue='qmaria',
+    queue='q24',
     dag=dag
 )
 # 리뷰 크롤링
 review_crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=get_shoes_review,
-    queue='qmaria',
+    queue='q24',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -221,7 +220,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 크롤링이 종료되었습니다.'},
-    queue='qmaria',
+    queue='q24',
     dag=dag
 )
 
