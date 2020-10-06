@@ -76,7 +76,6 @@ def get_shoes_review():
 
     review_list = []
     info_list = []
-    img_url_list = []
     
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -89,6 +88,7 @@ def get_shoes_review():
     progress_check = 0
     # 모델별 크롤링 코드
     for prod_id in prod_ids:
+        img_url_list = []
         page = 0
         while True:
             page = page + 1
@@ -133,7 +133,7 @@ def get_shoes_review():
                     cst_size = prod_size_jud_split[0]
                     cst_foot_width = prod_size_jud_split[1]
                     cst_size_jud = prod_size_jud_split[2]
-                    size_list.append([prod_review_date_text
+                    info_list.append([prod_review_date_text
                                          , prod_cst_name_text
                                          , cst_size
                                          , cst_foot_width
@@ -190,7 +190,7 @@ def get_shoes_review():
         csvWriter.writerow(q)
 
     csvWriters.writerow(['prod_review_date','prod_cst_name','cst_size','cst_foot_width','cst_size_jud'])
-    for w in size_list:
+    for w in info_list:
         csvWriters.writerow(w)
     f.close()
     j.close()

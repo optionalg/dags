@@ -75,12 +75,12 @@ def get_shoes_review():
     for style in style_list:
     
         musinsa_rvw_list = []
-        img_url_list = []
         
         progress = 0
         progress_check = 0
         
         for prod_id in prod_ids:
+            img_url_list = []
             img_prod_name = ''
             page_num = 0
             while True:

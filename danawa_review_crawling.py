@@ -99,12 +99,12 @@ def get_shoes_review():
     prod_ids = prod_dataframe['prod_id']
     
     danawa_reviews = []
-    img_url_list = []
     
     progress = 0
     progress_check = 0
     
     for prod_id in prod_ids:
+        img_url_list = []
         page = 0
         while True:
             page = page + 1
