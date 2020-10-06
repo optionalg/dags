@@ -1,6 +1,6 @@
 # shared
 import requests
-
+# 안녕 나야.
 # crawling
 from bs4 import BeautifulSoup
 from selenium import webdriver
