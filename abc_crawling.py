@@ -78,7 +78,7 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
                 , size_info])
                     
     # csv파일 만들어서 오픈
-    f = open('/home/ids/abc_{0}.csv'.format(category_name), 'w', encoding='utf-8', newline='')
+    f = open('/root/reviews/abc_{0}.csv'.format(category_name), 'w', encoding='utf-8', newline='')
     # csv 형식으로 쓰기
     csvWriter = csv.writer(f)
     # 헤드 생성
