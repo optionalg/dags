@@ -69,7 +69,7 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
         id_num = driver.find_elements_by_css_selector('body > ul > li')
         size = driver.find_elements_by_class_name('prod-size-list')
         # zip함수로 하나로 묶어서 임시 리스트에 넣기
-        for brand_text,name_text,cost_text in zip(brand, name, cost, size):
+        for brand_text,name_text,cost_text,size_info in zip(brand, name, cost, size):
             prod_id = id_num.get_attribute('data-product-no')
             size_info = size.get_attribute('data-option')
             temp_model_list.append([
