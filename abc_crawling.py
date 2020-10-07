@@ -150,13 +150,13 @@ end_notify = PythonOperator(
 for category_name, category_page in category_info.items():
     # 크롤링 코드 동작
     crawling_code = PythonOperator(
-        task_id='crawling_'+category_name,
+        task_id='crawling_{0}'.format(category_name),
         python_callable=get_shoe_model_list,
         op_kwargs={'category_name':category_name
                   ,'category_page':category_page},
         dag=dag
     )
-    start_notify >> crawling_{}.format(category_name) >> end_notify
+    start_notify >> crawling_code >> end_notify
     
 # 다음과 같이도 가능하다 - set_downstream
 # start_notify.set_downstream(crawling_code)
