@@ -78,11 +78,11 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
                 , size_info])
                     
     # csv파일 만들어서 오픈
-    f = open('/root/reviews/abc_{0}.csv'.format(category_name), 'w', encoding='utf-8', newline='')
+    f = open('/home/ids/abc_{0}.csv'.format(category_name), 'w', encoding='utf-8', newline='')
     # csv 형식으로 쓰기
     csvWriter = csv.writer(f)
     # 헤드 생성
-    csvWriter.writerow(['category','brand','prod-name','price-cost','size_info'])
+    csvWriter.writerow(['category','brand','modelname','price','size'])
     # 임시 리스트에서 하나씩 꺼내와서 쓰기
     for model in temp_model_list:
         csvWriter.writerow(model)
