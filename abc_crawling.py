@@ -49,7 +49,7 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
-    ptions.add_argument('--disable-gpu')
+    options.add_argument('--disable-gpu')
     # 옵션을 넣어 드라이버 생성
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
    
