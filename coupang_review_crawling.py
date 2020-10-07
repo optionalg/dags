@@ -8,7 +8,6 @@ from selenium.webdriver.common.keys import Keys
 import datetime as dt
 import time
 import csv
-# 하하하하하
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -28,7 +27,6 @@ def get_shoes_info():
         , 'newbalance' : '84'
         , 'reebok' : '85'
         , 'converse' : '86'
-        , 'crocs' : '1674'
         , 'superga' : '1806'
     }
 

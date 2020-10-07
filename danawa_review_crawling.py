@@ -29,9 +29,8 @@ def get_shoes_info():
         , 'newbalance' : '13760'
         , 'reebok' : '13770'
         , 'converse' : '10986'
-        , 'hokins' : '10719'
+        , 'hawkins' : '10719'
         , 'vans' : '10720'
-        , 'crocs' : '10828'
         , 'superga' : '10750'
     }
 
