@@ -18,21 +18,31 @@ import sys
 import pendulum
 import requests
 
-# 신발 정보 가져오는 함수
-def get_shoes_info():
+brand_info = {
+      '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
+    ''', '프레드페리' : '10601', '메종마르지엘라' : '35048', '버버리' : '10562', '락포트' : '10821', '알렉산더맥퀸' : '14288'
+    , '탠디' : '10812', '엘칸토' : '10859', '리차드' : '6642', '발렌시아가' : '10803', '소다' : '6953'
+    , '발렌티노' : '10741', 'MLB' : '10579', '오니츠카타이거' : '10388857', '구찌' : '10794', '닥스' : '44805'
+    , '제옥스' : '10913' , '엑셀시오르' : '27451', '프리웨이' : '6641', '아떼바네사브루노' : '42907' , '스타지오네바이엘칸토' : '36625'
+    , '폴스미스' : '10462', '생로랑파리' : '10756', '크록스' : '10828', '슈펜' : '30033', '미소페' : '10698'
+    , '프라다' : '10561' , '지방시' : '10735', '핏플랍' : '10867', '영에이지' : '14582092', '플로쥬' : '29793216'
+    , '아디다스' : '10851', '나이키' : '13876', '뉴발란스' : '13760', '리복' : '13770', '휠라' : '10789'
+    , '푸마' : '12042', '프로스펙스' : '25922412', '아식스' : '6345', '디스커버리익스페디션' : '29957', '르까프' : '27161'
+    , '스케쳐스' : '13949', '미즈노' : '31561', '월드컵' : '26402', '노스페이스' : '29956', '브룩스' : '10405600'
+    , '요넥스' : '13806', '르꼬끄' : '5248', '슬레진저' : '18865', '호카오네오네' : '25462089', '언더아머' : '31563'
+    , '카파' : '13997', '데상트' : '11764', '맥스' : '34861', '케이스위스' : '11028', '네파' : '13755'
+    , '가데옴므' : '35419', '포트폴리오' : '14582122', '와키앤타키' : '6680', '리갈' : '6339', '에스콰이아' : '14582020'
+    , '토즈' : '10891', '제니아에센셜' : '20642094', '레노마' : '10537', '제니아' : '20642088', '보닌' : '7061'
+    , '레페토' : '10866', '엘리자벳' : '10822', '페라가모' : '10090', '잭앤질슈즈' : '11193', '가이거' : '11101'
+    , '심플리트' : '14582323', '세라' : '10831', '고세' : '10824', '스퍼' : '6363', '포멜카멜레' : '35961'
+    , '바바라' : '6364', '메쎄' : '10912', '레이첼콕스' : '10840' : '베카치노' : '9519', '토리버치' : '10773'
+    , '버켄스탁' : '10935', '페이퍼플레인' : '35422', '슈스파' : '10430', '테바' : '14156', 'SNRD' : '35423'
+    , '닥터마틴' : '10747', '팀버랜드' : '10942', '무다' : '35421', '알도' : '13911', '쏘로굿' : '10749'
+    , '호킨스' : '10719' , '수페르가' : '10750', '스티유' : '13922', '라그라치아' : '11681188', '아멜리에' : '27810'''
+}
 
-    brand_info = {
-          'adidas' : '10851'
-        , 'nike' : '13876'
-        , 'fila' : '10789'
-        , 'puma' : '12042'
-        , 'newbalance' : '13760'
-        , 'reebok' : '13770'
-        , 'converse' : '10986'
-        , 'hawkins' : '10719'
-        , 'vans' : '10720'
-        , 'superga' : '10750'
-    }
+# 신발 정보 가져오는 함수
+def get_shoes_info(b_name, page, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -45,42 +55,39 @@ def get_shoes_info():
     # 크롤링한 신발들의 정보를 담을 리스트
     shoes_full_info = []
     
-    for b_name, page in brand_info.items():
-        # 리뷰 많은 순으로 정렬하여 20페이지까지만 진행
-        for i in range(1,21):
-            url = 'http://search.danawa.com/dsearch.php?query=%EC%8B%A0%EB%B0%9C&originalQuery=%EC%8B%A0%EB%B0%9C&previousKeyword=%EC%8B%A0%EB%B0%9C&volumeType=allvs&page='+str(i)+'&limit=120&sort=opinionDESC&list=list&boost=true&addDelivery=N&brand='+str(page)+'&tab=main'
-            driver.get(url)
-            time.sleep(3)
-            try:
-                nosearchArea = driver.find_element_by_selector('#nosearchArea')
-                print(nosearchArea)
-                break
-            except:
-                pass
-            # 모델 코드, 모델 이름, 모델 정보
-            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
-            for q,w,e in zip(prod_ids,prod_names,prod_infos):
-                prod_id = q.get_attribute('id')[20:]
-                prod_name = w.text
-                prod_info = e.text
-                prod_category = e.text.split(sep='/')[1]
-                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
+    # 리뷰 많은 순으로 정렬하여 15페이지까지만 진행
+    for i in range(1,16):
+        url = 'http://search.danawa.com/dsearch.php?query=%EC%8B%A0%EB%B0%9C&originalQuery=%EC%8B%A0%EB%B0%9C&previousKeyword=%EC%8B%A0%EB%B0%9C&volumeType=allvs&page='+str(i)+'&limit=120&sort=opinionDESC&list=list&boost=true&addDelivery=N&brand='+str(page)+'&tab=main'
+        driver.get(url)
+        time.sleep(3)
+        try:
+            nosearchArea = driver.find_element_by_selector('#nosearchArea')
+            print(nosearchArea)
+            break
+        except:
+            pass
+        # 모델 코드, 모델 이름, 모델 정보
+        prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
+        prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
+        prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+        for q,w,e,r in zip(prod_ids,prod_names,prod_infos, prod_dates):
+            prod_id = q.get_attribute('id')[20:]
+            prod_name = w.text
+            prod_info = e.text
+            prod_category = e.text.split(sep='/')[1]
+            shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
                 
     # 브랜드이름 파일명으로 저장
-    now = dt.datetime.now()
-    nowDate = now.strftime('%Y_%m_%d')
-    filename = '/root/reviews/danawa_prod_id_{}.csv'.format(nowDate)
+    filename = f'/root/reviews/danawa_{b_name}_prod_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand','prod_id','prod_name','prod_category','prod_info'])
+    csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
     for i in shoes_full_info:
         csvWriter.writerow(i)
     f.close()
     driver.close()
 
-def get_shoes_review():
+def get_shoes_review(b_name, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -91,19 +98,17 @@ def get_shoes_review():
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
     # prod_id 불러오기
-    now = dt.datetime.now()
-    nowDate = now.strftime('%Y_%m_%d')
-    danawa_prod_id_path = '/root/reviews/danawa_prod_id_{}.csv'.format(nowDate)
+    danawa_prod_id_path = '/root/reviews/danawa_{}_prod_id.csv'.format(b_name)
     prod_dataframe = pd.read_csv(danawa_prod_id_path)
-    prod_ids = prod_dataframe['prod_id']
+    prod_ids = prod_dataframe['danawa_id']
     
     danawa_reviews = []
     
-    progress = 0
-    progress_check = 0
+    #progress = 0
+    #progress_check = 0
     
     for prod_id in prod_ids:
-        img_url_list = []
+        #img_url_list = []
         page = 0
         while True:
             page = page + 1
@@ -112,10 +117,12 @@ def get_shoes_review():
             time.sleep(3)
             rvw_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
             rvw_list = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[2]/div[1]/div[2]')
+            '''
             danawa_img_list = driver.find_elements_by_class_name('center > img')
             for img_src in danawa_img_list:
                 danawa_img_url = img_src.get_attribute('src')
                 img_url_list.append(danawa_img_url)
+            '''
             try:
                 no_data = driver.find_element_by_class_name('no_data')
                 if no_data != None:
@@ -124,6 +131,7 @@ def get_shoes_review():
                 pass
             for q,w in zip(rvw_date,rvw_list):
                 danawa_reviews.append([q.text,w.text,prod_id])
+        '''
         n = 1
         for url in img_url_list:
             n = n + 1
@@ -131,7 +139,8 @@ def get_shoes_review():
             file = open(f'/root/images/danawa_{prod_id}_{n}.jpg', 'wb')
             file.write(r.content)
             file.close()
-    
+        '''
+        '''
         # 진행상황 체크                
         progress = progress + 1
         progress_percent = round((progress * 100) / float(len(prod_ids)))
@@ -151,12 +160,12 @@ def get_shoes_review():
                     'message' : progress_notify
                 }
             )
-
+        '''
         
-    filename ='/root/reviews/danawa_reviews_{}.csv'.format(nowDate)
+    filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['prod_id','review_date','reviews'])
+    csvWriter.writerow(['danawa_id','review_date','reviews'])
     for i in danawa_reviews:
         csvWriter.writerow(i)
     f.close()
@@ -207,21 +216,6 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
-    queue='q23',
-    dag=dag
-)
-# id 크롤링
-id_crawling_code = PythonOperator(
-    task_id='id_crawling',
-    python_callable=get_shoes_info,
-    queue='q23',
-    dag=dag
-)
-# 리뷰 크롤링
-review_crawling_code = PythonOperator(
-    task_id='review_crawling',
-    python_callable=get_shoes_review,
-    queue='q23',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -229,9 +223,22 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
-    queue='q23',
     dag=dag
 )
-
-# 실행 순서 설정
-start_notify >> id_crawling_code >> review_crawling_code >> end_notify
+# DAG 동적 생성
+for b_name, page in brand_info.items():
+    # 크롤링 DAG
+    id_crawling = PythonOperator(
+        task_id='{0}_id_crawling'.format(b_name),
+        python_callable=get_shoes_info,
+        op_kwargs={'b_name':b_name
+                  ,'page':page},
+        dag=dag
+    )
+    review_crawling = PythonOperator(
+        task_id='{0}_review_crawling'.format(b_name),
+        python_callable=get_shoes_review,
+        op_kwargs={'b_name':b_name},
+        dag=dag
+    )
+    start_notify >> id_crawling>> review_crawling >> end_notify

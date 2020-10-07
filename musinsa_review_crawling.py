@@ -16,8 +16,22 @@ import sys
 import pendulum
 import requests
 
+category_info = {
+      '구두' : '005014'
+    , '부츠' : '005011'
+    , '힐' : '005012'
+    , '픞랫슈즈' : '005017'
+    , '로퍼' : '005015'
+    , '보트슈즈' : '005016'
+    , '샌들' : '005004'
+    , '슬리퍼' : '005018'
+    , '캔버스' : '018002'
+    , '러닝화' : '018003'
+    , '스니커즈' : '018004'
+}
+
 # 무신사 모델명, id 뽑기
-def get_shoes_info():
+def get_shoes_info(category, page, **kwargs):
     
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -28,40 +42,53 @@ def get_shoes_info():
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
     prod_info = []
-    
     for i in range(16):
-        url = 'https://store.musinsa.com/app/items/lists/005/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=1000&page='+str(i)+'&page_kind=category&list_kind=small&free_dlv=&ex_soldout=Y&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
+        url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=2000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
         driver.get(url)
-        #searchList
 
         prod_brand = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.item_title > a')
         prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.list_img > a')
         prod_name_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > a')
+        
         for q,w,e in zip(prod_id_list,prod_name_list,prod_brand):
             raw_prod_id = q.get_attribute("href")
             prod_name = w.text
             prod_brand = e.text
             prod_id = raw_prod_id.split('/')[6]
-            prod_info.append([prod_brand, prod_id, prod_name])
+            prod_info.append([category, prod_brand, prod_id, prod_name])
             
-    now = dt.datetime.now()
-    nowDate = now.strftime('%Y_%m_%d')
-    filename = '/root/reviews/musinsa_prod_id_{}.csv'.format(nowDate)
+    filename = '/root/reviews/musinsa_{}_prod_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['prod_brand', 'prod_id', 'prod_name'])
+    csvWriter.writerow(['category','brand', 'musinsa_id', 'modelname'])
     for i in prod_info:
         csvWriter.writerow(i)
     f.close()
     driver.close()
 
+def Name_ID(prod_id):
+    url = f'https://store.musinsa.com/app/product/detail/{prod_id}/0'
+    driver.get(url)
+    # 제품코드, 브랜드 class_name 으로 찾기.
+    id_and_brand = driver.find_element_by_class_name('product_article_contents')
+    size = driver.find_element_by_class_name('option1')
+    # Name 과 brand 가 '/' 로 붙어있어서 split.
+    id_and_brand_text = id_and_brand.text
+    prod_brand = id_and_brand_text.split('/')[0] #이거는 브랜드 필요하면 쓰세요.
+    name_id = iD_and_brand_text.split('/')[1]
+    # Size text 변환후 공백 제거.
+    size_text = size.text
+    size_text_split = size_text.split()
+    # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
+    join_size_text = '-'.join(size_text_split) # 이거는 사이즈 필요하면 쓰세요.
 
+    return Name_id
 
-def get_shoes_review():
+def get_shoes_review(category, **kwargs):
     now = dt.datetime.now()
     nowDate = now.strftime('%Y_%m_%d')
-    prod_id_csv = pd.read_csv('/root/reviews/musinsa_prod_id_{}.csv'.format(nowDate))
-    prod_ids = prod_id_csv['prod_id']
+    prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_prod_id.csv.csv'.format(category))
+    prod_ids = prod_id_csv['musinsa_id']
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -76,12 +103,29 @@ def get_shoes_review():
     
         musinsa_rvw_list = []
         
-        progress = 0
-        progress_check = 0
+        #progress = 0
+        #progress_check = 0
         
         for prod_id in prod_ids:
-            img_url_list = []
-            img_prod_name = ''
+            # 이미지 크롤링 변수
+            #img_url_list = []
+            #img_prod_name = ''
+            
+            url = f'https://store.musinsa.com/app/product/detail/{prod_id}/0'
+            driver.get(url)
+            # 제품코드, 브랜드 class_name 으로 찾기.
+            id_and_brand = driver.find_element_by_class_name('product_article_contents')
+            size = driver.find_element_by_class_name('option1')
+            # Name 과 brand 가 '/' 로 붙어있어서 split.
+            id_and_brand_text = id_and_brand.text
+            prod_brand = id_and_brand_text.split('/')[0] #이거는 브랜드 필요하면 쓰세요.
+            name_id = iD_and_brand_text.split('/')[1]
+            # Size text 변환후 공백 제거.
+            size_text = Size.text
+            size_text_split = size_text.split()
+            # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
+            join_size_text = '-'.join(size_text_split) # 이거는 사이즈 필요하면 쓰세요.
+            
             page_num = 0
             while True:
                 page_num = page_num + 1
@@ -92,10 +136,12 @@ def get_shoes_review():
                 prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
+                '''
                 prod_img_list = driver.find_elements_by_class_name('musinsa-gallery-images')
                 for img_src in prod_img_list:
                     img_url = img_src.get_attribute('src')
                     img_url_list.append(img_url)
+                '''
                 try:
                     no_data = driver.find_element_by_class_name('mypage_review_none')
                     if no_data != None:
@@ -108,14 +154,13 @@ def get_shoes_review():
                     try:
                         test = prod_size_jud_text.split('\n')
                         size = test[0]
-                        brightness = test[1]
-                        color = test[2]
                         footwidth = test[3]
                         ignition = test[4]
                     except:
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
-                    musinsa_rvw_list.append([q.text, w.text, e.text, size, brightness, color, footwidth, ignition, r.text])
+                    musinsa_rvw_list.append([q.text, w.text, e.text, size, footwidth, ignition, r.text])
+            '''
             n = 0
             for url in img_url_list:
                 n = n + 1
@@ -132,6 +177,7 @@ def get_shoes_review():
                 progress_notify = f'무신사 {style} 리뷰 크롤링 {str(progress_percent)}% 완료되었습니다.'
                 TARGET_URL = 'https://notify-api.line.me/api/notify'
                 TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
+            
 
                 # 요청합니다.
                 requests.post(
@@ -143,11 +189,12 @@ def get_shoes_review():
                         'message' : progress_notify
                     }
                 )
+            '''
 
-        filename = f'/root/reviews/musinsa_reviews_{style}_{nowDate}.csv'
+        filename = f'/root/reviews/musinsa_{style}_{category}_reviews.csv'
         f = open(filename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
-        csvWriter.writerow(['prod_date','prod_name','prod_cust_buy_size','prod_size','prod_brightness','prod_color','prod_footwidth','prod_ignition','prod_rvw'])
+        csvWriter.writerow(['prod_date','prod_name','prod_cust_buy_size','prod_size','prod_footwidth','prod_feeling','prod_rvw'])
         for w in musinsa_rvw_list:
             csvWriter.writerow(w)
         f.close()
@@ -201,20 +248,6 @@ start_notify = PythonOperator(
     queue='q24',
     dag=dag
 )
-# id 크롤링
-id_crawling_code = PythonOperator(
-    task_id='id_crawling',
-    python_callable=get_shoes_info,
-    queue='q24',
-    dag=dag
-)
-# 리뷰 크롤링
-review_crawling_code = PythonOperator(
-    task_id='review_crawling',
-    python_callable=get_shoes_review,
-    queue='q24',
-    dag=dag
-)
 # 크롤링 종료 알림
 end_notify = PythonOperator(
     task_id='end_notify',
@@ -224,5 +257,20 @@ end_notify = PythonOperator(
     dag=dag
 )
 
-# 실행 순서 설정
-start_notify >> id_crawling_code >> review_crawling_code >> end_notify
+# DAG 동적 생성
+for category in category_info.items():
+    # 크롤링 DAG
+    id_crawling = PythonOperator(
+        task_id='{0}_id_crawling'.format(b_name),
+        python_callable=get_shoes_info,
+        op_kwargs={'b_name':b_name
+                  ,'page':page},
+        dag=dag
+    )
+    review_crawling = PythonOperator(
+        task_id='{0}_review_crawling'.format(b_name),
+        python_callable=get_shoes_review,
+        op_kwargs={'b_name':b_name},
+        dag=dag
+    )
+    start_notify >> id_crawling>> review_crawling >> end_notify
