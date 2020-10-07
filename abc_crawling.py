@@ -66,17 +66,14 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
         brand = driver.find_elements_by_class_name('prod-brand')
         name = driver.find_elements_by_class_name('prod-name')
         cost = driver.find_elements_by_class_name('price-cost')
-        id_num = driver.find_elements_by_css_selector('body > ul > li')
         size = driver.find_elements_by_class_name('prod-size-list')
         # zip함수로 하나로 묶어서 임시 리스트에 넣기
         for brand_text,name_text,cost_text,size in zip(brand, name, cost, size):
-            prod_id = id_num.get_attribute('data-product-no')
             size_info = size.get_attribute('data-option')
             temp_model_list.append([
                   category_name
                 , brand_text.text
                 , name_text.text
-                , prod_id
                 , cost_text.text
                 , size_info])
                     
@@ -85,7 +82,7 @@ def get_shoe_model_list(category_name, category_page, **kwargs):
     # csv 형식으로 쓰기
     csvWriter = csv.writer(f)
     # 헤드 생성
-    csvWriter.writerow(['category','brand','prod-name','prod_id','price-cost','size_info'])
+    csvWriter.writerow(['category','brand','prod-name','price-cost','size_info'])
     # 임시 리스트에서 하나씩 꺼내와서 쓰기
     for model in temp_model_list:
         csvWriter.writerow(model)
