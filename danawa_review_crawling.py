@@ -69,7 +69,7 @@ def get_shoes_info(b_name, page, **kwargs):
         prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
         prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
         prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
-        for q,w,e,r in zip(prod_ids,prod_names,prod_infos, prod_dates):
+        for q,w,e in zip(prod_ids,prod_names,prod_infos):
             prod_id = q.get_attribute('id')[20:]
             prod_name = w.text
             prod_info = e.text
