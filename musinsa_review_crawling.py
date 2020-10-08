@@ -17,7 +17,6 @@ import pendulum
 import requests
 
 category_info = {
-'''
       '구두' : '005014'
     , '부츠' : '005011'
     , '힐' : '005012'
@@ -29,18 +28,6 @@ category_info = {
     , '캔버스' : '018002'
     , '러닝화' : '018003'
     , '스니커즈' : '018004'
-'''
-      'shoes' : '005014'
-    , 'boots' : '005011'
-    , 'hill' : '005012'
-    , 'flat' : '005017'
-    , 'loafer' : '005015'
-    , 'boat' : '005016'
-    , 'sandal' : '005004'
-    , 'slipper' : '005018'
-    , 'canvas' : '018002'
-    , 'running' : '018003'
-    , 'sneakers' : '018004'
 }
 
 # 무신사 모델명, id 뽑기
@@ -221,14 +208,14 @@ end_notify = PythonOperator(
 for name, page in category_info.items():
     # 크롤링 DAG
     id_crawling = PythonOperator(
-        task_id='{0}_id_crawling'.format(name),
+        task_id='{0}_id_crawling'.format(page),
         python_callable=get_shoes_info,
         op_kwargs={'category':name
                   ,'page':page},
         dag=dag
     )
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(name),
+        task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'category':name},
         dag=dag

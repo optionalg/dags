@@ -193,14 +193,14 @@ end_notify = PythonOperator(
 for b_name, page in brand_info.items():
     # 크롤링 DAG
     id_crawling = PythonOperator(
-        task_id='{0}_id_crawling'.format(b_name),
+        task_id='{0}_id_crawling'.format(page),
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
         dag=dag
     )
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(b_name),
+        task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
         dag=dag
