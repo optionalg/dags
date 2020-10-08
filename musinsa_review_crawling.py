@@ -64,19 +64,21 @@ def get_shoes_info(category, page, **kwargs):
         # Name 과 brand 가 '/' 로 붙어있어서 split.
         id_and_brand_text = id_and_brand.text
         prod_brand = id_and_brand_text.split('/')[0] #이거는 브랜드 필요하면 쓰세요.
-        name_id = iD_and_brand_text.split('/')[1]
+        name_id = id_and_brand_text.split('/')[1]
+        gender = driver.find_element_by_class_name('txt_gender')
         # Size text 변환후 공백 제거.
+        gender_text = gender.text
         size_text = size.text
         size_text_split = size_text.split()
         # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
         join_size_text = '-'.join(size_text_split) # 이거는 사이즈 필요하면 쓰세요.
 
-        prod_info.append([category, prod_brand, prod_id, prod_name, name_id, join_size_text])
+        prod_info.append([category, prod_brand, prod_id, prod_name, name_id, gender_text ,join_size_text])
     
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['category', 'brand', 'musinsa_id', 'modelname', 'id', 'size'])
+    csvWriter.writerow(['category', 'brand', 'musinsa_id', 'modelname', 'id', 'gender' ,'size'])
     for i in prod_info:
         csvWriter.writerow(i)
     f.close()
