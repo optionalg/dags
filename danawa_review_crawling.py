@@ -20,7 +20,7 @@ import requests
 
 brand_info = {
       '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
-    ''', '프레드페리' : '10601', '메종마르지엘라' : '35048', '버버리' : '10562', '락포트' : '10821', '알렉산더맥퀸' : '14288'
+    , '프레드페리' : '10601', '메종마르지엘라' : '35048', '버버리' : '10562', '락포트' : '10821', '알렉산더맥퀸' : '14288'
     , '탠디' : '10812', '엘칸토' : '10859', '리차드' : '6642', '발렌시아가' : '10803', '소다' : '6953'
     , '발렌티노' : '10741', 'MLB' : '10579', '오니츠카타이거' : '10388857', '구찌' : '10794', '닥스' : '44805'
     , '제옥스' : '10913' , '엑셀시오르' : '27451', '프리웨이' : '6641', '아떼바네사브루노' : '42907' , '스타지오네바이엘칸토' : '36625'
@@ -38,7 +38,7 @@ brand_info = {
     , '바바라' : '6364', '메쎄' : '10912', '레이첼콕스' : '10840' : '베카치노' : '9519', '토리버치' : '10773'
     , '버켄스탁' : '10935', '페이퍼플레인' : '35422', '슈스파' : '10430', '테바' : '14156', 'SNRD' : '35423'
     , '닥터마틴' : '10747', '팀버랜드' : '10942', '무다' : '35421', '알도' : '13911', '쏘로굿' : '10749'
-    , '호킨스' : '10719' , '수페르가' : '10750', '스티유' : '13922', '라그라치아' : '11681188', '아멜리에' : '27810'''
+    , '호킨스' : '10719' , '수페르가' : '10750', '스티유' : '13922', '라그라치아' : '11681188', '아멜리에' : '27810'
 }
 
 # 신발 정보 가져오는 함수
@@ -78,7 +78,7 @@ def get_shoes_info(b_name, page, **kwargs):
             shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
                 
     # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_{b_name}_prod_id.csv'
+    filename = f'/root/reviews/danawa_{b_name}_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
@@ -98,7 +98,7 @@ def get_shoes_review(b_name, **kwargs):
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
     # prod_id 불러오기
-    danawa_prod_id_path = '/root/reviews/danawa_{}_prod_id.csv'.format(b_name)
+    danawa_prod_id_path = '/root/reviews/danawa_{}_id.csv'.format(b_name)
     prod_dataframe = pd.read_csv(danawa_prod_id_path)
     prod_ids = prod_dataframe['danawa_id']
     
