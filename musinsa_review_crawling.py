@@ -222,6 +222,7 @@ for name, page in category_info_split.items():
         python_callable=get_shoes_info,
         op_kwargs={'category':name
                   ,'page':page},
+        queue='q20',
         dag=dag
     )
     review_crawling = PythonOperator(
@@ -241,6 +242,7 @@ for name, page in category_info.items():
         python_callable=get_shoes_info,
         op_kwargs={'category':name
                   ,'page':page},
+        queue='q22',
         dag=dag
     )
     review_crawling = PythonOperator(
