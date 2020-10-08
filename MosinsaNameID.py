@@ -19,11 +19,15 @@ def Name_ID(mosinsa_prod_id):
     # 제품코드, 브랜드 class_name 으로 찾기.
     Name_ID_and_brand = driver.find_element_by_class_name('product_article_contents')
     Size = driver.find_element_by_class_name('option1')
+    Sex = driver.find_element_by_class_name('txt_gender')
     # Name 과 brand 가 '/' 로 붙어있어서 split.
+    
     Name_ID_and_brand_text = Name_ID_and_brand.text
     prod_brand = Name_ID_and_brand_text.split('/')[0] #이거는 브랜드 필요하면 쓰세요.
     Name_id = Name_ID_and_brand_text.split('/')[1]
+    
     # Size text 변환후 공백 제거.
+    Sex_text = Sex.text
     Size_text = Size.text
     Size_text_split = Size_text.split()
     # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
