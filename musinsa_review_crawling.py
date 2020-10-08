@@ -81,8 +81,8 @@ def get_shoes_info(category, page, **kwargs):
         size_text_split = size_text.split()
         # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
         join_size_text = '-'.join(size_text_split)  # 사이즈.
-        prod_info.append([prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id, price])
-    
+        prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id, price])
+
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
