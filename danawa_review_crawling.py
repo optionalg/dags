@@ -135,7 +135,7 @@ def get_shoes_review(b_name, **kwargs):
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                danawa_reviews.append([q.text,w.text,prod_id])
+                danawa_reviews.append([prod_id,q.text,w.text])
 
     filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
     f = open(filename, 'w', encoding='utf-8', newline='')
