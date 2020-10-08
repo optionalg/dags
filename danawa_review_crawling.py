@@ -19,7 +19,7 @@ import pendulum
 import requests
 
 brand_info = {
-      '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
+    '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
     , '프레드페리' : '10601', '메종마르지엘라' : '35048', '버버리' : '10562', '락포트' : '10821', '알렉산더맥퀸' : '14288'
     , '탠디' : '10812', '엘칸토' : '10859', '리차드' : '6642', '발렌시아가' : '10803', '소다' : '6953'
     , '발렌티노' : '10741', 'MLB' : '10579', '오니츠카타이거' : '10388857', '구찌' : '10794', '닥스' : '44805'
@@ -51,10 +51,10 @@ def get_shoes_info(b_name, page, **kwargs):
     options.add_argument('--disable-gpu')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
+
     # 크롤링한 신발들의 정보를 담을 리스트
     shoes_full_info = []
-    
+
     # 리뷰 많은 순으로 정렬하여 15페이지까지만 진행
     for i in range(1,16):
         url = 'http://search.danawa.com/dsearch.php?query=%EC%8B%A0%EB%B0%9C&originalQuery=%EC%8B%A0%EB%B0%9C&previousKeyword=%EC%8B%A0%EB%B0%9C&volumeType=allvs&page='+str(i)+'&limit=120&sort=opinionDESC&list=list&boost=true&addDelivery=N&brand='+str(page)+'&tab=main'
@@ -62,7 +62,6 @@ def get_shoes_info(b_name, page, **kwargs):
         time.sleep(3)
         try:
             nosearchArea = driver.find_element_by_selector('#nosearchArea')
-            print(nosearchArea)
             break
         except:
             pass
@@ -96,17 +95,17 @@ def get_shoes_review(b_name, **kwargs):
     options.add_argument('--disable-gpu')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
+
     # prod_id 불러오기
     danawa_prod_id_path = '/root/reviews/danawa_{}_id.csv'.format(b_name)
     prod_dataframe = pd.read_csv(danawa_prod_id_path)
     prod_ids = prod_dataframe['danawa_id']
-    
+
     danawa_reviews = []
-    
+
     #progress = 0
     #progress_check = 0
-    
+
     for prod_id in prod_ids:
         #img_url_list = []
         page = 0
@@ -126,7 +125,7 @@ def get_shoes_review(b_name, **kwargs):
                 pass
             for q,w in zip(rvw_date,rvw_list):
                 danawa_reviews.append([q.text,w.text,prod_id])
-        
+
     filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
@@ -143,7 +142,7 @@ def notify(context, **kwargs):
 
     # 요청합니다.
     requests.post(
-          TARGET_URL
+        TARGET_URL
         , headers={
             'Authorization' : 'Bearer ' + TOKEN
         }
@@ -197,7 +196,7 @@ for b_name, page in brand_info.items():
         task_id='{0}_id_crawling'.format(b_name),
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
-                  ,'page':page},
+                    ,'page':page},
         dag=dag
     )
     review_crawling = PythonOperator(
