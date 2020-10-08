@@ -61,27 +61,29 @@ def get_shoes_info(category, page, **kwargs):
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
         size = driver.find_element_by_class_name('option1')
         gender = driver.find_element_by_class_name('txt_gender')
-        # nomal_price = driver.find_element_by_id('goods_price')
-        # sale_price = driver.find_element_by_id('sale_price')
+        try:
+            price = driver.find_element_by_css_selector('#goods_price > del')
+        except:
+            price = driver.find_element_by_css_selector('#goods_price')
         # Name 과 brand 가 '/' 로 붙어있어서 split.
         id_and_brand_text = id_and_brand.text
         prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
         name_id = id_and_brand_text.split('/')[1]  # 모델품번
         prod_name_text = prod_name.text  # 제품이름
-        # nomal_price_text = nomal_price.text # 일반가격
-        # sale_price_text = sale_price.text # 할인가격
+        price_text = price.text # 일반가격
+
         # Size text 변환후 공백 제거.
         gender_text = gender.text # 성별
         size_text = size.text
         size_text_split = size_text.split()
         # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
         join_size_text = '-'.join(size_text_split)  # 사이즈.
-        prod_info.append([prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id])
+        prod_info.append([prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id, price])
     
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['category', 'brand', 'prod_name', 'modelname', 'gender' ,'size', 'musinsa_id'])
+    csvWriter.writerow(['category', 'brand', 'prod_name', 'modelname', 'gender' ,'size', 'musinsa_id','price'])
     for i in prod_info:
         csvWriter.writerow(i)
     f.close()
