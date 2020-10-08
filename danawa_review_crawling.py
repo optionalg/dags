@@ -65,16 +65,27 @@ def get_shoes_info(b_name, page, **kwargs):
             break
         except:
             pass
-        # 모델 코드, 모델 이름, 모델 정보
-        prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-        prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-        prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
-        for q,w,e in zip(prod_ids,prod_names,prod_infos):
-            prod_id = q.get_attribute('id')[20:]
-            prod_name = w.text
-            prod_info = e.text
-            prod_category = e.text.split(sep='/')[1]
-            shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
+        try:
+            # 모델 코드, 모델 이름, 모델 정보
+            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
+            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
+            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            for q,w,e in zip(prod_ids,prod_names,prod_infos):
+                prod_id = q.get_attribute('id')[20:]
+                prod_name = w.text
+                prod_info = e.text
+                prod_category = e.text.split(sep='/')[1]
+                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
+        # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
+        except:
+            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
+            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
+            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            for q,w,e in zip(prod_ids,prod_names,prod_infos):
+                prod_id = q.get_attribute('id')[20:]
+                prod_name = w.text
+                prod_info = e.text
+                shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info])
                 
     # 브랜드이름 파일명으로 저장
     filename = f'/root/reviews/danawa_{b_name}_id.csv'
