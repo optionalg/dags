@@ -120,12 +120,7 @@ def get_shoes_review(category, **kwargs):
                 prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
-                '''
-                prod_img_list = driver.find_elements_by_class_name('musinsa-gallery-images')
-                for img_src in prod_img_list:
-                    img_url = img_src.get_attribute('src')
-                    img_url_list.append(img_url)
-                '''
+
                 try:
                     no_data = driver.find_element_by_class_name('mypage_review_none')
                     if no_data != None:
@@ -144,36 +139,6 @@ def get_shoes_review(category, **kwargs):
                         pass
                 for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
                     musinsa_rvw_list.append([q.text, w.text, e.text, size, footwidth, ignition, r.text])
-            '''
-            n = 0
-            for url in img_url_list:
-                n = n + 1
-                r = requests.get(url)
-                file = open(f'/root/images/musinsa_{style}_{prod_id}_{n}.jpg', 'wb')
-                file.write(r.content)
-                file.close()
-            
-            # 진행상황 체크                
-            progress = progress + 1
-            progress_percent = round((progress * 100) / float(len(prod_ids)))
-            if progress_check < progress_percent :
-                progress_check = progress_percent
-                progress_notify = f'무신사 {style} 리뷰 크롤링 {str(progress_percent)}% 완료되었습니다.'
-                TARGET_URL = 'https://notify-api.line.me/api/notify'
-                TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
-            
-
-                # 요청합니다.
-                requests.post(
-                    TARGET_URL
-                    , headers={
-                        'Authorization' : 'Bearer ' + TOKEN
-                    }
-                    , data={
-                        'message' : progress_notify
-                    }
-                )
-            '''
 
         filename = f'/root/reviews/musinsa_{style}_{category}_reviews.csv'
         f = open(filename, 'w', encoding='utf-8', newline='')

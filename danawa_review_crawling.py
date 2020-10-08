@@ -117,12 +117,7 @@ def get_shoes_review(b_name, **kwargs):
             time.sleep(3)
             rvw_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
             rvw_list = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[2]/div[1]/div[2]')
-            '''
-            danawa_img_list = driver.find_elements_by_class_name('center > img')
-            for img_src in danawa_img_list:
-                danawa_img_url = img_src.get_attribute('src')
-                img_url_list.append(danawa_img_url)
-            '''
+
             try:
                 no_data = driver.find_element_by_class_name('no_data')
                 if no_data != None:
@@ -131,36 +126,6 @@ def get_shoes_review(b_name, **kwargs):
                 pass
             for q,w in zip(rvw_date,rvw_list):
                 danawa_reviews.append([q.text,w.text,prod_id])
-        '''
-        n = 1
-        for url in img_url_list:
-            n = n + 1
-            r = requests.get(url)
-            file = open(f'/root/images/danawa_{prod_id}_{n}.jpg', 'wb')
-            file.write(r.content)
-            file.close()
-        '''
-        '''
-        # 진행상황 체크                
-        progress = progress + 1
-        progress_percent = round((progress * 100) / float(len(prod_ids)))
-        if progress_check < progress_percent :
-            progress_check = progress_percent
-            progress_notify = f'다나와 리뷰 크롤링 {str(progress_percent)}% 완료되었습니다.'
-            TARGET_URL = 'https://notify-api.line.me/api/notify'
-            TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
-
-            # 요청합니다.
-            requests.post(
-                TARGET_URL
-                , headers={
-                    'Authorization' : 'Bearer ' + TOKEN
-                }
-                , data={
-                    'message' : progress_notify
-                }
-            )
-        '''
         
     filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
     f = open(filename, 'w', encoding='utf-8', newline='')
