@@ -73,6 +73,7 @@ def get_shoes_info(b_name, page, **kwargs):
             prod_id = q.get_attribute('id')[20:]
             prod_name = w.text
             prod_info = e.text
+            prod_category = e.text.split(sep='/')[1]
             shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
                 
     # 브랜드이름 파일명으로 저장
