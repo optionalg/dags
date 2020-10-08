@@ -53,7 +53,7 @@ def get_shoes_info(category, page, **kwargs):
         raw_prod_id = q.get_attribute("title")
         prod_name = w.text
         prod_brand = e.text
-        prod_id = raw_prod_id.split('/')[6]
+        prod_id = raw_prod_id.split('/')
         
         url = f'https://store.musinsa.com/app/product/detail/{prod_id}/0'
         driver.get(url)
