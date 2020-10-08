@@ -46,7 +46,7 @@ def get_shoes_info(category, page, **kwargs):
     driver.get(url)
     time.sleep(60)
     prod_brand = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.item_title > a')
-    prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > alist_info')
+    prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > a')
     prod_name_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > a')
         
     for q,w,e in zip(prod_id_list,prod_name_list,prod_brand):
