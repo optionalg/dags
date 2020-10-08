@@ -42,33 +42,16 @@ def get_shoes_info(category, page, **kwargs):
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
     prod_info = []
-<<<<<<< HEAD
     url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=3000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
-    driver.get(url)
-    time.sleep(60)
-    prod_brand = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.item_title > a')
-    prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > alist_info')
-    prod_name_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > a')
-        
-    for q,w,e in zip(prod_id_list,prod_name_list,prod_brand):
-        raw_prod_id = q.get_attribute("title")
-        prod_name = w.text
-        prod_brand = e.text
-        prod_id = raw_prod_id.split('/')[6]
-        
-        url = f'https://store.musinsa.com/app/product/detail/{prod_id}/0'
-=======
-    for i in range(1,4):
-        url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd='+str(page)+'&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=900&page='+str(i)+'&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
->>>>>>> 1a525e69e7e88eccc9baebdcac96f0b9f4498136
+
         driver.get(url)
         time.sleep(60)
         prod_brand = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.item_title > a')
-        prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.list_img > a')
+        prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > alist_info')
         prod_name_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.article_info > p.list_info > a')
             
         for q,w,e in zip(prod_id_list,prod_name_list,prod_brand):
-            raw_prod_id = q.get_attribute("href")
+            raw_prod_id = q.get_attribute("title")
             prod_name = w.text
             prod_brand = e.text
             prod_id = raw_prod_id.split('/')[6]
