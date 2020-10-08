@@ -25,10 +25,13 @@ category_info = {
     , '보트슈즈' : '005016'
     , '샌들' : '005004'
     , '슬리퍼' : '005018'
-    , '캔버스' : '018002'
+}
+category_info_split = {
+      '캔버스' : '018002'
     , '러닝화' : '018003'
     , '스니커즈' : '018004'
-}
+{
+
 
 # 무신사 모델명, id 뽑기
 def get_shoes_info(category, page, **kwargs):
@@ -212,6 +215,25 @@ end_notify = PythonOperator(
 )
 
 # DAG 동적 생성
+for name, page in category_info_split.items():
+    # 크롤링 DAG
+    id_crawling = PythonOperator(
+        task_id='{0}_id_crawling'.format(page),
+        python_callable=get_shoes_info,
+        op_kwargs={'category':name
+                  ,'page':page},
+        dag=dag
+    )
+    review_crawling = PythonOperator(
+        task_id='{0}_review_crawling'.format(page),
+        python_callable=get_shoes_review,
+        op_kwargs={'category':name},
+        queue='q20',
+        dag=dag
+    )
+    start_notify >> id_crawling>> review_crawling >> end_notify
+    
+# DAG 동적 생성
 for name, page in category_info.items():
     # 크롤링 DAG
     id_crawling = PythonOperator(
@@ -225,6 +247,7 @@ for name, page in category_info.items():
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'category':name},
+        queue='q22',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
