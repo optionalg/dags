@@ -206,3 +206,4 @@ for b_name, page in brand_info.items():
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
+    
