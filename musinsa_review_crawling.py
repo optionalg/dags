@@ -62,7 +62,10 @@ def get_shoes_info(category, page, **kwargs):
         # 제품코드, 브랜드 class_name 으로 찾기.
         prod_name = driver.find_element_by_class_name('product_title')
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
-        size = driver.find_element_by_class_name('option1')
+        try:
+            size = driver.find_element_by_class_name('option1')
+        except:
+            size = '사이즈 정보 없음'
         gender = driver.find_element_by_class_name('txt_gender')
         try:
             price = driver.find_element_by_css_selector('#goods_price > del')
@@ -85,23 +88,26 @@ def get_shoes_info(category, page, **kwargs):
 
         gender_text = gender.text # 성별
         
-        # 사이즈
-        size_texts = size.text
-        size_text_split = size_texts.split()[2:]
-        size_regex = re.compile('[0-9]{3}')
-        size_text = []
-        # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
-        for regex_check in size_text_split:
-            if size_regex.search(regex_check):
-                if len(regex_check) == 3:
-                    size_text.append(regex_check)
-                else:
-                    try:
-                        size_text.append(regex_check.split('_')[1])
-                    except:
+        # 사이즈 예외처리
+        try:
+            size_texts = size.text
+            size_text_split = size_texts.split()[2:]
+            size_regex = re.compile('[0-9]{3}')
+            size_text = []
+            # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
+            for regex_check in size_text_split:
+                if size_regex.search(regex_check):
+                    if len(regex_check) == 3:
                         size_text.append(regex_check)
-                    
-        join_size_text = '-'.join(size_text)  # 사이즈.
+                    else:
+                        try:
+                            size_text.append(regex_check.split('_')[1])
+                        except:
+                            size_text.append(regex_check)
+            join_size_text = '-'.join(size_text)  # 사이즈.
+        except:
+            join_size_text = size
+            
         prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id_one, price_text])
 
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
@@ -116,7 +122,7 @@ def get_shoes_info(category, page, **kwargs):
 def get_shoes_review(category, **kwargs):
     now = dt.datetime.now()
     nowDate = now.strftime('%Y_%m_%d')
-    prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_id.csv.csv'.format(category))
+    prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_id.csv'.format(category))
     prod_ids = prod_id_csv['musinsa_id']
 
     # 크롬 드라이버 옵션
