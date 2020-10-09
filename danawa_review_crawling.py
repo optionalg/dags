@@ -148,7 +148,8 @@ def get_shoes_info(b_name, page, **kwargs):
             if ' 출시가: ' in splitinfo[n]:
                 danawa['price'][i] = splitinfo[n].strip()[5:-1]
 
-
+    danawa.to_csv('/root/reviews/danawa_{b_name}_id.csv', encoding='utf-8')
+    
 def get_shoes_review(b_name, **kwargs):
 
     # 크롬 드라이버 옵션
