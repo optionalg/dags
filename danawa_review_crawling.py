@@ -97,6 +97,58 @@ def get_shoes_info(b_name, page, **kwargs):
     f.close()
     driver.close()
 
+    # 저장된 파일 편
+    danawa = pd.read_csv('/root/review/danawa_{b_name}_id.csv')
+
+    splitmo = danawa['modelname'].str.split(' ')
+    danawa['shono'] = ''
+
+    shosex = ['남성용', '여성용', '남녀공용']
+    danawa['shosex'] = ''
+
+    danacate = [['슬립온'], ['컴포트화'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
+        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화'], ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화']
+        , ['부츠', '워커'], ['로퍼,옥스퍼드']]
+    musincate = ['캔버스/단화', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
+
+    danawa['heelsize'] = ''
+    danawa['price'] = ''
+
+    splitinfo = danawa['prod_info'].str.split('/')
+
+    for i in danawa.index:
+        #   품번 추출
+        danawa['shono'][i] = splitmo[i][-1]
+        #   모델명 추출
+        danawa['modelname'][i] = ' '.join(splitmo[i][1:-1])
+        #   신발 성별 추출
+        for n in range(0, len(shosex)):
+            if shosex[n] in danawa['prod_info'][i]:
+                danawa['shosex'][i] = shosex[n]
+        if danawa['shosex'][i] == '':
+            danawa.drop(i, axis=0, inplace=True)
+
+    danawa.reset_index(drop=True, inplace=True)
+        # 카테고리 무신사 기준으로 수정
+    for i in danawa.index:
+        for n in range(0, len(danacate)):
+            for m in range(0, len(danacate[n])):
+                if danacate[n][m] in danawa['prod_info'][i]:
+                    danawa['category'][i] = musincate[n]
+        if danawa['category'][i] not in musincate:
+            danawa.drop(i, axis=0, inplace=True)
+
+    danawa.reset_index(drop=True, inplace=True)
+
+        #   굽, 가격 추출
+    for i in danawa.index:
+        for n in range(0, len(splitinfo)):
+            if ' 총굽: ' in splitinfo[n]:
+                danawa['heelsize'][i] = splitinfo[n].strip()[3:]
+            if ' 출시가: ' in splitinfo[n]:
+                danawa['price'][i] = splitinfo[n].strip()[5:-1]
+
+
 def get_shoes_review(b_name, **kwargs):
 
     # 크롬 드라이버 옵션
