@@ -19,7 +19,7 @@ import pendulum
 import requests
 
 brand_info = {
-    '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
+      '골든구스' : '10697', '반스' : '10720', '라코스테' : '6559', '돔바' : '13645', '컨버스' : '10986'
     , '프레드페리' : '10601', '메종마르지엘라' : '35048', '버버리' : '10562', '락포트' : '10821', '알렉산더맥퀸' : '14288'
     , '탠디' : '10812', '엘칸토' : '10859', '리차드' : '6642', '발렌시아가' : '10803', '소다' : '6953'
     , '발렌티노' : '10741', 'MLB' : '10579', '오니츠카타이거' : '10388857', '구찌' : '10794', '닥스' : '44805'
@@ -28,6 +28,9 @@ brand_info = {
     , '프라다' : '10561' , '지방시' : '10735', '핏플랍' : '10867', '영에이지' : '14582092', '플로쥬' : '29793216'
     , '아디다스' : '10851', '나이키' : '13876', '뉴발란스' : '13760', '리복' : '13770', '휠라' : '10789'
     , '푸마' : '12042', '프로스펙스' : '25922412', '아식스' : '6345', '디스커버리익스페디션' : '29957', '르까프' : '27161'
+}
+brand_info_split = {
+      '푸마' : '12042', '프로스펙스' : '25922412', '아식스' : '6345', '디스커버리익스페디션' : '29957', '르까프' : '27161'
     , '스케쳐스' : '13949', '미즈노' : '31561', '월드컵' : '26402', '노스페이스' : '29956', '브룩스' : '10405600'
     , '요넥스' : '13806', '르꼬끄' : '5248', '슬레진저' : '18865', '호카오네오네' : '25462089', '언더아머' : '31563'
     , '카파' : '13997', '데상트' : '11764', '맥스' : '34861', '케이스위스' : '11028', '네파' : '13755'
@@ -88,7 +91,7 @@ def get_shoes_info(b_name, page, **kwargs):
                 shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info])
                 
     # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_{b_name}_id.csv'
+    filename = f'/root/reviews/danawa_raw_{b_name}_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
@@ -98,7 +101,7 @@ def get_shoes_info(b_name, page, **kwargs):
     driver.close()
 
     # 저장된 파일 편
-    danawa = pd.read_csv('/root/review/danawa_{b_name}_id.csv')
+    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
 
     splitmo = danawa['modelname'].str.split(' ')
     danawa['shono'] = ''
@@ -109,7 +112,8 @@ def get_shoes_info(b_name, page, **kwargs):
     danacate = [['슬립온'], ['컴포트화'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
         , ['런닝화', '트레일런닝화', '워킹화', '마라톤화'], ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화']
         , ['부츠', '워커'], ['로퍼,옥스퍼드']]
-    musincate = ['캔버스/단화', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
+    # 파일 저장시 / 가 들어있으면 에러가 나서 캔버스/단화 -> 캔버스로 수정
+    musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
 
     danawa['heelsize'] = ''
     danawa['price'] = ''
@@ -147,6 +151,8 @@ def get_shoes_info(b_name, page, **kwargs):
                 danawa['heelsize'][i] = splitinfo[n].strip()[3:]
             if ' 출시가: ' in splitinfo[n]:
                 danawa['price'][i] = splitinfo[n].strip()[5:-1]
+    
+    danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
 
     danawa.to_csv('/root/reviews/danawa_{b_name}_id.csv', encoding='utf-8')
     
@@ -261,13 +267,34 @@ for b_name, page in brand_info.items():
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
+        queue='q22',
         dag=dag
     )
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
+        queue='q22',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
     
+# DAG 동적 생성
+for b_name, page in brand_info_split.items():
+    # 크롤링 DAG
+    id_crawling = PythonOperator(
+        task_id='{0}_id_crawling'.format(page),
+        python_callable=get_shoes_info,
+        op_kwargs={'b_name':b_name
+                    ,'page':page},
+        queue='q20',
+        dag=dag
+    )
+    review_crawling = PythonOperator(
+        task_id='{0}_review_crawling'.format(page),
+        python_callable=get_shoes_review,
+        op_kwargs={'b_name':b_name},
+        queue='q20',
+        dag=dag
+    )
+    start_notify >> id_crawling>> review_crawling >> end_notify
