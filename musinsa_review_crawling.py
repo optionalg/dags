@@ -96,7 +96,10 @@ def get_shoes_info(category, page, **kwargs):
                 if len(regex_check) == 3:
                     size_text.append(regex_check)
                 else:
-                    size_text.append(regex_check.split('_')[1])
+                    try:
+                        size_text.append(regex_check.split('_')[1])
+                    except:
+                        size_text.append(regex_check)
                     
         join_size_text = '-'.join(size_text)  # 사이즈.
         prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id_one, price_text])
