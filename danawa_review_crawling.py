@@ -138,13 +138,16 @@ def get_shoes_info(b_name, page, **kwargs):
         if danawa['category'][i] not in musincate:
             danawa.drop(i, axis=0, inplace=True)
 
+    danawa.reset_index(drop=True, inplace=True)
+
         #   굽, 가격 추출
+    for i in danawa.index:
         for n in range(0, len(splitinfo)):
             if ' 총굽: ' in splitinfo[n]:
                 danawa['heelsize'][i] = splitinfo[n].strip()[3:]
             if ' 출시가: ' in splitinfo[n]:
                 danawa['price'][i] = splitinfo[n].strip()[5:-1]
-    danawa.reset_index(drop=True, inplace=True)
+
 
 def get_shoes_review(b_name, **kwargs):
 
