@@ -91,7 +91,7 @@ def get_shoes_info(b_name, page, **kwargs):
                 shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info])
                 
     # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_{b_name}_id.csv'
+    filename = f'/root/reviews/danawa_raw_{b_name}_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
     csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
@@ -101,7 +101,7 @@ def get_shoes_info(b_name, page, **kwargs):
     driver.close()
 
     # 저장된 파일 편
-    danawa = pd.read_csv('/root/review/danawa_{b_name}_id.csv')
+    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
 
     splitmo = danawa['modelname'].str.split(' ')
     danawa['shono'] = ''
@@ -151,6 +151,8 @@ def get_shoes_info(b_name, page, **kwargs):
                 danawa['heelsize'][i] = splitinfo[n].strip()[3:]
             if ' 출시가: ' in splitinfo[n]:
                 danawa['price'][i] = splitinfo[n].strip()[5:-1]
+    
+    danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
 
 
 def get_shoes_review(b_name, **kwargs):
