@@ -66,6 +66,22 @@ def get_shoes_info(category, page, **kwargs):
             size = driver.find_element_by_class_name('option1')
         except:
             size = '사이즈 정보 없음'
+        # 사이즈 예외처리
+        try:
+            size_texts = size.text
+            size_text_split = size_texts.split()[2:]
+            size_text = []
+            # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
+            for regex_check in size_text_split:
+                try:
+                    temp = str(re.findall('2\d[0|5]',regex_check)[0])
+                    size_text.append(temp)
+                except:
+                    size_text.append('사이즈 정보 없음')
+            join_size_text = '-'.join(size_text)  # 사이즈.
+        except:
+            join_size_text = size
+               
         gender = driver.find_element_by_class_name('txt_gender')
         try:
             price = driver.find_element_by_css_selector('#goods_price > del')
@@ -87,28 +103,8 @@ def get_shoes_info(category, page, **kwargs):
         price_text = price.text # 일반가격
 
         gender_text = gender.text # 성별
-        
-        # 사이즈 예외처리
-        try:
-            size_texts = size.text
-            size_text_split = size_texts.split()[2:]
-            size_regex = re.compile('[0-9]{3}')
-            size_text = []
-            # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
-            for regex_check in size_text_split:
-                if size_regex.search(regex_check):
-                    if len(regex_check) == 3:
-                        size_text.append(regex_check)
-                    else:
-                        try:
-                            size_text.append(regex_check.split('_')[1])
-                        except:
-                            size_text.append(regex_check)
-            join_size_text = '-'.join(size_text)  # 사이즈.
-        except:
-            join_size_text = size
             
-        prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id_one, price_text])
+        prod_info.append([category, prod_brand, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
 
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
