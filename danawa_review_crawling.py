@@ -128,7 +128,9 @@ def get_shoes_info(b_name, page, **kwargs):
         if danawa['shosex'][i] == '':
             danawa.drop(i, axis=0, inplace=True)
 
+    danawa.reset_index(drop=True, inplace=True)
         # 카테고리 무신사 기준으로 수정
+    for i in danawa.index:
         for n in range(0, len(danacate)):
             for m in range(0, len(danacate[n])):
                 if danacate[n][m] in danawa['prod_info'][i]:
@@ -142,6 +144,7 @@ def get_shoes_info(b_name, page, **kwargs):
                 danawa['heelsize'][i] = splitinfo[n].strip()[3:]
             if ' 출시가: ' in splitinfo[n]:
                 danawa['price'][i] = splitinfo[n].strip()[5:-1]
+    danawa.reset_index(drop=True, inplace=True)
 
 def get_shoes_review(b_name, **kwargs):
 
