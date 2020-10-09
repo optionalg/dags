@@ -7,7 +7,6 @@ import time
 import csv
 import datetime as dt
 
-
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -74,15 +73,33 @@ def get_shoes_info(category, page, **kwargs):
         prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
         name_id = id_and_brand_text.split('/')[1]  # 모델품번
         prod_name_text = prod_name.text  # 제품이름
+        
+        # 제품 이름에서 품번 제거
+        modelname = ''
+        if len(prod_name_text.split()) != 1:
+            modelname = prod_name_text.replace(name_id.'').replace('/','')
+        else:
+            modelname = prod_name_text
+        
         price_text = price.text # 일반가격
 
-        # Size text 변환후 공백 제거.
         gender_text = gender.text # 성별
-        size_text = size.text
-        size_text_split = size_text.split()
-        # ['230','240','250','260','270'] 이렇게 리스트 형식이어서 join 으로 합치는 정규 표현식.
-        join_size_text = '-'.join(size_text_split)  # 사이즈.
-        prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id, price_text])
+        
+        # 사이즈
+        size_texts = size.text
+        size_text_split = size_texts.split()[2:]
+        size_regex = re.compile('[0-9]{3}')
+        size_text = []
+        # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
+        for regex_check in size_text_split:
+            if size_regex.search(regex_check):
+                if len(regex_check) == 3:
+                    size_text.append(regex_check)
+                else:
+                    size_text.append(regex_check.split('_')[1])
+                    
+        join_size_text = '-'.join(size_text)  # 사이즈.
+        prod_info.append([category, prod_brand, name_id, prod_name_text, gender_text, join_size_text, prod_id_one, price_text])
 
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
