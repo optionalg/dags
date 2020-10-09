@@ -77,7 +77,7 @@ def get_shoes_info(category, page, **kwargs):
         # 제품 이름에서 품번 제거
         modelname = ''
         if len(prod_name_text.split()) != 1:
-            modelname = prod_name_text.replace(name_id.'').replace('/','')
+            modelname = prod_name_text.replace(name_id,'').replace('/','')
         else:
             modelname = prod_name_text
         
