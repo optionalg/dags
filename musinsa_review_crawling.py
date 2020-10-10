@@ -89,7 +89,11 @@ def get_shoes_info(category, page, **kwargs):
         # Name 과 brand 가 '/' 로 붙어있어서 split.
         id_and_brand_text = id_and_brand.text
         prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
-        name_id = id_and_brand_text.split('/')[1]  # 모델품번
+        try :
+            name_id = id_and_brand_text.split('/')[1]  # 모델품번
+        except :
+            name_id = id_and_brand_text
+            
         prod_name_text = prod_name.text  # 제품이름
         
         # 제품 이름에서 품번 제거
