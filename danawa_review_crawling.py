@@ -116,7 +116,7 @@ def get_shoes_info(b_name, page, **kwargs):
     danawa['heelsize'] = ''
     danawa['price'] = ''
 
-    for i in tqdm(danawa.index):
+    for i in danawa.index:
         #   품번 추출
         danawa['shono'][i] = splitmo[i][-1]
         #   모델명 추출
