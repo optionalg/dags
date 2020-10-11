@@ -111,15 +111,12 @@ def get_shoes_info(b_name, page, **kwargs):
     danacate = [['슬립온'], ['컴포트화'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
         , ['런닝화', '트레일런닝화', '워킹화', '마라톤화'], ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화']
         , ['부츠', '워커'], ['로퍼,옥스퍼드']]
-    # 파일 저장시 / 가 들어있으면 에러가 나서 캔버스/단화 -> 캔버스로 수정
     musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
 
     danawa['heelsize'] = ''
     danawa['price'] = ''
 
-    splitinfo = danawa['prod_info'].str.split('/')
-
-    for i in danawa.index:
+    for i in tqdm(danawa.index):
         #   품번 추출
         danawa['shono'][i] = splitmo[i][-1]
         #   모델명 추출
@@ -128,29 +125,26 @@ def get_shoes_info(b_name, page, **kwargs):
         for n in range(0, len(shosex)):
             if shosex[n] in danawa['prod_info'][i]:
                 danawa['shosex'][i] = shosex[n]
-        if danawa['shosex'][i] == '':
-            danawa.drop(i, axis=0, inplace=True)
+        #   굽 추출
+        splitinfo = danawa['prod_info'][i].split('/')
+        for n in range(0, len(splitinfo)):
+            if ' 총굽: ' in splitinfo[n]:
+                danawa['heelsize'][i] = splitinfo[n].strip()[3:]
+            #   가격추출
+            if ' 출시가: ' in splitinfo[n]:
+                danawa['price'][i] = splitinfo[n].strip()[5:-1]
 
-    danawa.reset_index(drop=True, inplace=True)
-        # 카테고리 무신사 기준으로 수정
-    for i in danawa.index:
+        #   카테고리 무신사기준으로 변경
         for n in range(0, len(danacate)):
             for m in range(0, len(danacate[n])):
                 if danacate[n][m] in danawa['prod_info'][i]:
                     danawa['category'][i] = musincate[n]
-        if danawa['category'][i] not in musincate:
+
+        #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
+        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] == ''):
             danawa.drop(i, axis=0, inplace=True)
 
-    danawa.reset_index(drop=True, inplace=True)
 
-        #   굽, 가격 추출
-    for i in danawa.index:
-        for n in range(0, len(splitinfo)):
-            if ' 총굽: ' in splitinfo[n]:
-                danawa['heelsize'][i] = splitinfo[n].strip()[3:]
-            if ' 출시가: ' in splitinfo[n]:
-                danawa['price'][i] = splitinfo[n].strip()[5:-1]
-    
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
 
 
