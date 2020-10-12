@@ -116,7 +116,7 @@ def get_shoes_info(b_name, page, **kwargs):
     danawa['heelsize'] = None
     danawa['price'] = None
 
-    for i in tqdm(danawa.index):
+    for i in danawa.index:
         splitmo = danawa['modelname'][i].split(' ')
         for n in splitmo:
             if re.match('.*\d{3,}.*', n):
