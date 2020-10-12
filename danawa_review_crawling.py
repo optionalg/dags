@@ -250,6 +250,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # DAG 동적 생성
@@ -260,7 +261,7 @@ for b_name, page in brand_info.items():
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
-        queue='q22',
+        queue='qmaria',
         dag=dag
     )
     review_crawling = PythonOperator(
@@ -268,6 +269,7 @@ for b_name, page in brand_info.items():
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
         queue='q22',
+        queue='qmaria',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
