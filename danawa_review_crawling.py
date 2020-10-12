@@ -70,8 +70,8 @@ def get_shoes_info(b_name, page, **kwargs):
         try:
             # 모델 코드, 모델 이름, 모델 정보
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
@@ -81,8 +81,8 @@ def get_shoes_info(b_name, page, **kwargs):
         # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
         except:
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
