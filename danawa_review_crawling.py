@@ -26,7 +26,7 @@ brand_info = {
     , '제옥스' : '10913' , '엑셀시오르' : '27451', '프리웨이' : '6641', '아떼바네사브루노' : '42907' , '스타지오네바이엘칸토' : '36625'
     , '폴스미스' : '10462', '생로랑파리' : '10756', '크록스' : '10828', '슈펜' : '30033', '미소페' : '10698'
     , '프라다' : '10561' , '지방시' : '10735', '핏플랍' : '10867', '영에이지' : '14582092', '플로쥬' : '29793216'
-    , '아디다스' : '10851', '나이키' : '13876', '뉴발란스' : '13760', '리복' : '13770', '휠라' : '10789'
+    , '호킨스' : '10719', '나이키' : '13876', '스티유' : '13922', '리복' : '13770', '아멜리에' : '27810'
     , '푸마' : '12042', '프로스펙스' : '25922412', '아식스' : '6345', '디스커버리익스페디션' : '29957', '르까프' : '27161'
     , '스케쳐스' : '13949', '미즈노' : '31561', '월드컵' : '26402', '노스페이스' : '29956', '브룩스' : '10405600'
 }
@@ -40,7 +40,7 @@ brand_info_split = {
     , '바바라' : '6364', '메쎄' : '10912', '레이첼콕스' : '10840' , '베카치노' : '9519', '토리버치' : '10773'
     , '버켄스탁' : '10935', '페이퍼플레인' : '35422', '슈스파' : '10430', '테바' : '14156', 'SNRD' : '35423'
     , '닥터마틴' : '10747', '팀버랜드' : '10942', '무다' : '35421', '알도' : '13911', '쏘로굿' : '10749'
-    , '호킨스' : '10719' , '수페르가' : '10750', '스티유' : '13922', '라그라치아' : '11681188', '아멜리에' : '27810'
+    , '아디다스' : '10851', '수페르가' : '10750', '뉴발란스' : '13760', '라그라치아' : '11681188', '휠라' : '10789'
 }
 
 # 신발 정보 가져오는 함수
@@ -70,8 +70,8 @@ def get_shoes_info(b_name, page, **kwargs):
         try:
             # 모델 코드, 모델 이름, 모델 정보
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
@@ -81,8 +81,8 @@ def get_shoes_info(b_name, page, **kwargs):
         # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
         except:
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
@@ -280,14 +280,14 @@ for b_name, page in brand_info_split.items():
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
-        queue='q20',
+        queue='qmaria',
         dag=dag
     )
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
-        queue='q20',
+        queue='qmaria',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
