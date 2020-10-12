@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b052d66a-ae9e-4b82-b7ec-c7bcb7dee155" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/danawa_review_crawling.py" beforeDir="false" afterPath="$PROJECT_DIR$/danawa_review_crawling.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

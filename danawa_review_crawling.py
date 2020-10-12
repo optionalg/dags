@@ -102,38 +102,38 @@ def get_shoes_info(b_name, page, **kwargs):
     # 저장된 파일 편
     danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
 
-    splitmo = danawa['modelname'].str.split(' ')
-    danawa['shono'] = ''
+    danawa['shono'] = None
 
     shosex = ['남성용', '여성용', '남녀공용']
-    danawa['shosex'] = ''
+    danawa['shosex'] = None
 
-    danacate = [['슬립온'], ['컴포트화', '몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
+    danacate = [['슬립온'], ['몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
         , ['런닝화', '트레일런닝화', '워킹화', '마라톤화']
         , ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화', '볼링화', '아쿠아슈즈', '트레이닝화']
-        , ['부츠', '워커'], ['로퍼', '옥스퍼드']]
+        , ['부츠', '워커'], ['로퍼', '옥스퍼드', '컴포트화']]
     musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
 
-    danawa['heelsize'] = ''
-    danawa['price'] = ''
+    danawa['heelsize'] = None
+    danawa['price'] = None
 
-    for i in danawa.index:
-        #   품번 추출
-        danawa['shono'][i] = splitmo[i][-1]
-        #   모델명 추출
-        danawa['modelname'][i] = ' '.join(splitmo[i][1:-1])
+    for i in tqdm(danawa.index):
+        splitmo = danawa['modelname'][i].split(' ')
+        for n in splitmo:
+            if re.match('.*\d{3,}.*', n):
+                danawa['shono'][i] = n
+                danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
         #   신발 성별 추출
-        for n in range(0, len(shosex)):
-            if shosex[n] in danawa['prod_info'][i]:
-                danawa['shosex'][i] = shosex[n]
+        for n in shosex:
+            if n in danawa['prod_info'][i]:
+                danawa['shosex'][i] = n
         #   굽 추출
         splitinfo = danawa['prod_info'][i].split('/')
-        for n in range(0, len(splitinfo)):
-            if ' 총굽: ' in splitinfo[n]:
-                danawa['heelsize'][i] = splitinfo[n].strip()[3:]
+        for n in splitinfo:
+            if ' 총굽: ' in n:
+                danawa['heelsize'][i] = n.strip()[3:]
             #   가격추출
-            if ' 출시가: ' in splitinfo[n]:
-                danawa['price'][i] = splitinfo[n].strip()[5:-1]
+            if ' 출시가: ' in n:
+                danawa['price'][i] = n.strip()[5:-1]
 
         #   카테고리 무신사기준으로 변경
         for n in range(0, len(danacate)):
@@ -142,7 +142,7 @@ def get_shoes_info(b_name, page, **kwargs):
                     danawa['category'][i] = musincate[n]
 
         #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
-        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] == ''):
+        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] not in shosex):
             danawa.drop(i, axis=0, inplace=True)
 
 
