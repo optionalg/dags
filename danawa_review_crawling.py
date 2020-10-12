@@ -26,7 +26,7 @@ brand_info = {
     , '제옥스' : '10913' , '엑셀시오르' : '27451', '프리웨이' : '6641', '아떼바네사브루노' : '42907' , '스타지오네바이엘칸토' : '36625'
     , '폴스미스' : '10462', '생로랑파리' : '10756', '크록스' : '10828', '슈펜' : '30033', '미소페' : '10698'
     , '프라다' : '10561' , '지방시' : '10735', '핏플랍' : '10867', '영에이지' : '14582092', '플로쥬' : '29793216'
-    , '아디다스' : '10851', '나이키' : '13876', '뉴발란스' : '13760', '리복' : '13770', '휠라' : '10789'
+    , '호킨스' : '10719', '나이키' : '13876', '스티유' : '13922', '리복' : '13770', '아멜리에' : '27810'
     , '푸마' : '12042', '프로스펙스' : '25922412', '아식스' : '6345', '디스커버리익스페디션' : '29957', '르까프' : '27161'
     , '스케쳐스' : '13949', '미즈노' : '31561', '월드컵' : '26402', '노스페이스' : '29956', '브룩스' : '10405600'
 }
@@ -40,7 +40,7 @@ brand_info_split = {
     , '바바라' : '6364', '메쎄' : '10912', '레이첼콕스' : '10840' , '베카치노' : '9519', '토리버치' : '10773'
     , '버켄스탁' : '10935', '페이퍼플레인' : '35422', '슈스파' : '10430', '테바' : '14156', 'SNRD' : '35423'
     , '닥터마틴' : '10747', '팀버랜드' : '10942', '무다' : '35421', '알도' : '13911', '쏘로굿' : '10749'
-    , '호킨스' : '10719' , '수페르가' : '10750', '스티유' : '13922', '라그라치아' : '11681188', '아멜리에' : '27810'
+    , '아디다스' : '10851', '수페르가' : '10750', '뉴발란스' : '13760', '라그라치아' : '11681188', '휠라' : '10789'
 }
 
 # 신발 정보 가져오는 함수
@@ -70,8 +70,8 @@ def get_shoes_info(b_name, page, **kwargs):
         try:
             # 모델 코드, 모델 이름, 모델 정보
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
@@ -81,8 +81,8 @@ def get_shoes_info(b_name, page, **kwargs):
         # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
         except:
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/p/a')
-            prod_infos = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/div[3]/div[2]/div[7]/div[2]/div[2]/div[3]/ul/li/div/div[2]/dl/dd/div')
+            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+            prod_infos = driver.find_elements_by_class_name('spec_list')
             for q,w,e in zip(prod_ids,prod_names,prod_infos):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
@@ -102,55 +102,50 @@ def get_shoes_info(b_name, page, **kwargs):
     # 저장된 파일 편
     danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
 
-    splitmo = danawa['modelname'].str.split(' ')
-    danawa['shono'] = ''
+    danawa['shono'] = None
 
     shosex = ['남성용', '여성용', '남녀공용']
-    danawa['shosex'] = ''
+    danawa['shosex'] = None
 
-    danacate = [['슬립온'], ['컴포트화'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
-        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화'], ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화']
-        , ['부츠', '워커'], ['로퍼,옥스퍼드']]
-    # 파일 저장시 / 가 들어있으면 에러가 나서 캔버스/단화 -> 캔버스로 수정
+    danacate = [['슬립온'], ['몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
+        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화']
+        , ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화', '볼링화', '아쿠아슈즈', '트레이닝화']
+        , ['부츠', '워커'], ['로퍼', '옥스퍼드', '컴포트화']]
     musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
 
-    danawa['heelsize'] = ''
-    danawa['price'] = ''
-
-    splitinfo = danawa['prod_info'].str.split('/')
+    danawa['heelsize'] = None
+    danawa['price'] = None
 
     for i in danawa.index:
-        #   품번 추출
-        danawa['shono'][i] = splitmo[i][-1]
-        #   모델명 추출
-        danawa['modelname'][i] = ' '.join(splitmo[i][1:-1])
+        splitmo = danawa['modelname'][i].split(' ')
+        for n in splitmo:
+            if re.match('.*\d{3,}.*', n):
+                danawa['shono'][i] = n
+                danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
         #   신발 성별 추출
-        for n in range(0, len(shosex)):
-            if shosex[n] in danawa['prod_info'][i]:
-                danawa['shosex'][i] = shosex[n]
-        if danawa['shosex'][i] == '':
-            danawa.drop(i, axis=0, inplace=True)
+        for n in shosex:
+            if n in danawa['prod_info'][i]:
+                danawa['shosex'][i] = n
+        #   굽 추출
+        splitinfo = danawa['prod_info'][i].split('/')
+        for n in splitinfo:
+            if ' 총굽: ' in n:
+                danawa['heelsize'][i] = n.strip()[3:]
+            #   가격추출
+            if ' 출시가: ' in n:
+                danawa['price'][i] = n.strip()[5:-1]
 
-    danawa.reset_index(drop=True, inplace=True)
-        # 카테고리 무신사 기준으로 수정
-    for i in danawa.index:
+        #   카테고리 무신사기준으로 변경
         for n in range(0, len(danacate)):
             for m in range(0, len(danacate[n])):
                 if danacate[n][m] in danawa['prod_info'][i]:
                     danawa['category'][i] = musincate[n]
-        if danawa['category'][i] not in musincate:
+
+        #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
+        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] not in shosex):
             danawa.drop(i, axis=0, inplace=True)
 
-    danawa.reset_index(drop=True, inplace=True)
 
-        #   굽, 가격 추출
-    for i in danawa.index:
-        for n in range(0, len(splitinfo)):
-            if ' 총굽: ' in splitinfo[n]:
-                danawa['heelsize'][i] = splitinfo[n].strip()[3:]
-            if ' 출시가: ' in splitinfo[n]:
-                danawa['price'][i] = splitinfo[n].strip()[5:-1]
-    
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
 
 
@@ -248,6 +243,7 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -255,6 +251,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # DAG 동적 생성
@@ -285,14 +282,14 @@ for b_name, page in brand_info_split.items():
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
-        queue='q20',
+        queue='qmaria',
         dag=dag
     )
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
-        queue='q20',
+        queue='qmaria',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
