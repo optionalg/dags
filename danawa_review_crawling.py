@@ -243,6 +243,7 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -261,7 +262,7 @@ for b_name, page in brand_info.items():
         python_callable=get_shoes_info,
         op_kwargs={'b_name':b_name
                     ,'page':page},
-        queue='qmaria',
+        queue='q22',
         dag=dag
     )
     review_crawling = PythonOperator(
@@ -269,7 +270,6 @@ for b_name, page in brand_info.items():
         python_callable=get_shoes_review,
         op_kwargs={'b_name':b_name},
         queue='q22',
-        queue='qmaria',
         dag=dag
     )
     start_notify >> id_crawling>> review_crawling >> end_notify
