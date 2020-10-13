@@ -120,7 +120,7 @@ def get_shoes_info(b_name, page, **kwargs):
     for i in danawa.index:
         splitmo = danawa['modelname'][i].split(' ')
         for n in splitmo:
-            if re.match('.*\d{3,}.*', n):
+            if re.match('.*[a-zA-Z]*.*\d+.*', n):
                 danawa['shono'][i] = n
                 danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
         #   신발 성별 추출
