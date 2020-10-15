@@ -64,7 +64,7 @@ def get_shoes_review(category, **kwargs):
                 prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
-
+                #모델이름
                 try:
                     no_data = driver.find_element_by_class_name('mypage_review_none')
                     if no_data != None:
