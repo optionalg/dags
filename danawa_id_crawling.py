@@ -71,28 +71,32 @@ def get_shoes_info(b_name, page, **kwargs):
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
             prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
             prod_infos = driver.find_elements_by_class_name('spec_list')
-            for q,w,e in zip(prod_ids,prod_names,prod_infos):
+            prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
+            for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
                 prod_info = e.text
+                prod_cost = r.text
                 prod_category = e.text.split(sep='/')[1]
-                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
+                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info, prod_cost])
         # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
         except:
             prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
             prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
             prod_infos = driver.find_elements_by_class_name('spec_list')
-            for q,w,e in zip(prod_ids,prod_names,prod_infos):
+            prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
+            for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
                 prod_id = q.get_attribute('id')[20:]
                 prod_name = w.text
                 prod_info = e.text
-                shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info])
+                prod_cost = r.text
+                shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info,prod_cost])
                 
     # 브랜드이름 파일명으로 저장
     filename = f'/root/reviews/danawa_raw_{b_name}_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
+    csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info','prod_cost'])
     for i in shoes_full_info:
         csvWriter.writerow(i)
     f.close()
