@@ -216,7 +216,7 @@ for name, page in category_info_split.items():
         queue='qmaria',
         dag=dag
     )
-    start_notify >> id_crawling>> >> end_notify
+    start_notify >> id_crawling >> end_notify
     
 # DAG 동적 생성
 for name, page in category_info.items():
