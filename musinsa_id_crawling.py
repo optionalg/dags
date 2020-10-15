@@ -31,7 +31,7 @@ category_info_split = {
 }
 
 
-# 무신사 모델명, id 뽑기
+# 무신사 모델 정보 뽑기
 def get_shoes_info(category, page, **kwargs):
     
     # 크롬 드라이버 옵션
@@ -43,7 +43,7 @@ def get_shoes_info(category, page, **kwargs):
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
     
-    prod_info = []
+    # 모델 musinsa_id 추출 
     prod_id = []
     url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=3000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
     driver.get(url)
@@ -53,19 +53,39 @@ def get_shoes_info(category, page, **kwargs):
         raw_prod_id = q.get_attribute("data-original")
         prod_id_cook = raw_prod_id.split('/')[6]
         prod_id.append(prod_id_cook)
-
+    
+    # 모델 상세 정보 추출
+    prod_info = []
     for prod_id_one in prod_id:
         url2 = 'https://store.musinsa.com/app/product/detail/' + str(prod_id_one) + '/0'
         driver.get(url2)
         time.sleep(3)
-        # 제품코드, 브랜드 class_name 으로 찾기.
+        
+        # 모델이름
         prod_name = driver.find_element_by_class_name('product_title')
+        prod_name_text = prod_name.text
+        try: # 영어 이름이 있는 경우 제거
+            prod_name_eng = driver.find_element_by_class_name('product_title_eng')
+            prod_name_eng_text = prod_name_eng.text
+            prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
+        except: # 영어 이름이 없는 경우 pass
+            pass 
+            
+        # 브랜드, id
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
+        id_and_brand_text = id_and_brand.text
+        prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
+        try :
+            name_id = id_and_brand_text.split('/')[1]  # 모델품번
+        except :
+            name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
+        
+        # 사이즈
         try:
             size = driver.find_element_by_class_name('option1')
-        except:
+        except: # 단일 사이즈인 제품이 아주 가끔 있어서 예외처리
             size = '사이즈 정보 없음'
-        # 사이즈 예외처리
+        # 사이즈가 option1이 아닌 경우 예외처리
         try:
             size_texts = size.text
             size_text_split = size_texts.split()[2:]
@@ -76,36 +96,46 @@ def get_shoes_info(category, page, **kwargs):
                     temp = str(re.findall('2\d[0|5]',regex_check)[0])
                     size_text.append(temp)
                 except:
-                    size_text.append('사이즈 정보 없음')
+                    pass
             join_size_text = '-'.join(size_text)  # 사이즈.
         except:
             join_size_text = size
-               
+          
+        # 성별
         gender = driver.find_element_by_class_name('txt_gender')
+        gender_text = gender.text # 성별
+        
+        # 가격
         try:
             price = driver.find_element_by_css_selector('#goods_price > del')
         except:
             price = driver.find_element_by_css_selector('#goods_price')
-        # Name 과 brand 가 '/' 로 붙어있어서 split.
-        id_and_brand_text = id_and_brand.text
-        prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
-        try :
-            name_id = id_and_brand_text.split('/')[1]  # 모델품번
-        except :
-            name_id = id_and_brand_text
-            
-        prod_name_text = prod_name.text  # 제품이름
-        
-        # 제품 이름에서 품번 제거
-        modelname = ''
-        if len(prod_name_text.split()) != 1:
-            modelname = prod_name_text.replace(name_id,'').replace('/','')
-        else:
-            modelname = prod_name_text
-        
         price_text = price.text # 일반가격
 
-        gender_text = gender.text # 성별
+                    
+        # 모델 이름에서 품번, 광고성 문구, 색상 등 기타정보 제거
+        modelname = ''
+        if len(prod_name_text.split()) != 1: # 모델명이 품번이 아닌 경우
+            if prod_name_text.startswith('['): # [로 시작하는 광고 제거, 예)[키높이]
+                try:
+                    if len(prod_name_text.split(']')) > 2: # []가 여러개 있는 경우
+                        modelname = ''.join(prod_name_text.split(']')[2:])
+                        if modelname == '': # []가 끝에 있는경우
+                            modelname = ''.join(prod_name_text.split(']')[1:-1])
+                    else:
+                        modelname = prod_name_text.split(']')[1]
+                except: # 오타 있어서 [쏠라} 와 같은 것 때매 에러남
+                    modelname = prod_name_text.split('}')[1]
+
+            elif prod_name_text.startswith('('): # (로 시작하는 추가 정보가 있는 경우 예:(비브람솔)
+                modelname = ''.join(prod_name_text.split(')')[1:])
+            else: # 광고성 괄호가 없는 경우
+                modelname = prod_name_text
+                
+            modelname = modelname.replace(name_id,'').replace('/','') # 품번 제거
+            modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
+        else:
+            modelname = prod_name_text # 모델명이 품번인 경우
             
         prod_info.append([category, prod_brand, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
 

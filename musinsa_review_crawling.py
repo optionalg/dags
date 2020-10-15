@@ -34,7 +34,6 @@ category_info_split = {
 
 def get_shoes_review(category, **kwargs):
     now = dt.datetime.now()
-    nowDate = now.strftime('%Y_%m_%d')
     prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_id.csv'.format(category))
     prod_ids = prod_id_csv['musinsa_id']
 
@@ -52,13 +51,7 @@ def get_shoes_review(category, **kwargs):
     
         musinsa_rvw_list = []
         
-        #progress = 0
-        #progress_check = 0
-        
         for prod_id in prod_ids:
-            # 이미지 크롤링 변수
-            #img_url_list = []
-            #img_prod_name = ''
             
             page_num = 0
             while True:
@@ -67,7 +60,7 @@ def get_shoes_review(category, **kwargs):
                 driver.get(url)
                 time.sleep(3)
                 prod_rvw_date = driver.find_elements_by_class_name('date')
-                prod_name = driver.find_elements_by_class_name('list_info.p_name')
+                #prod_name = driver.find_elements_by_class_name('list_info.p_name')
                 prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
@@ -88,13 +81,13 @@ def get_shoes_review(category, **kwargs):
                         ignition = test[4]
                     except:
                         pass
-                for q,w,e,r in zip(prod_rvw_date,prod_name,prod_cust_buy_size,prod_rvw):
-                    musinsa_rvw_list.append([q.text, prod_id, w.text, e.text, size, footwidth, ignition, r.text])
+                for q,e,r in zip(prod_rvw_date,prod_cust_buy_size,prod_rvw):
+                    musinsa_rvw_list.append([q.text, prod_id, e.text, size, footwidth, ignition, r.text])
 
         filename = f'/root/reviews/musinsa_{style}_{category}_reviews.csv'
         f = open(filename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
-        csvWriter.writerow(['review_date','musinsa_id','modelname','buy_size','sizefeel','footwidthfeel','feeling','review'])
+        csvWriter.writerow(['review_date','musinsa_id','buy_size','sizefeel','footwidthfeel','feeling','review'])
         for w in musinsa_rvw_list:
             csvWriter.writerow(w)
         f.close()
