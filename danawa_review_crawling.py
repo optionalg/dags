@@ -43,112 +43,6 @@ brand_info_split = {
     , '아디다스' : '10851', '수페르가' : '10750', '뉴발란스' : '13760', '라그라치아' : '11681188', '휠라' : '10789'
 }
 
-# 신발 정보 가져오는 함수
-def get_shoes_info(b_name, page, **kwargs):
-
-    # 크롬 드라이버 옵션
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
-    driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-
-    # 크롤링한 신발들의 정보를 담을 리스트
-    shoes_full_info = []
-
-    # 리뷰 많은 순으로 정렬하여 15페이지까지만 진행
-    for i in range(1,16):
-        url = 'http://search.danawa.com/dsearch.php?query=%EC%8B%A0%EB%B0%9C&originalQuery=%EC%8B%A0%EB%B0%9C&previousKeyword=%EC%8B%A0%EB%B0%9C&volumeType=allvs&page='+str(i)+'&limit=120&sort=opinionDESC&list=list&boost=true&addDelivery=N&brand='+str(page)+'&tab=main'
-        driver.get(url)
-        time.sleep(3)
-        try:
-            nosearchArea = driver.find_element_by_selector('#nosearchArea')
-            break
-        except:
-            pass
-        try:
-            # 모델 코드, 모델 이름, 모델 정보
-            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
-            prod_infos = driver.find_elements_by_class_name('spec_list')
-            for q,w,e in zip(prod_ids,prod_names,prod_infos):
-                prod_id = q.get_attribute('id')[20:]
-                prod_name = w.text
-                prod_info = e.text
-                prod_category = e.text.split(sep='/')[1]
-                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info])
-        # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
-        except:
-            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
-            prod_infos = driver.find_elements_by_class_name('spec_list')
-            for q,w,e in zip(prod_ids,prod_names,prod_infos):
-                prod_id = q.get_attribute('id')[20:]
-                prod_name = w.text
-                prod_info = e.text
-                shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info])
-                
-    # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_raw_{b_name}_id.csv'
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info'])
-    for i in shoes_full_info:
-        csvWriter.writerow(i)
-    f.close()
-    driver.close()
-
-    # 저장된 파일 편
-    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
-
-    danawa['shono'] = None
-
-    shosex = ['남성용', '여성용', '남녀공용']
-    danawa['shosex'] = None
-
-    danacate = [['슬립온'], ['몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
-        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화']
-        , ['운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화', '볼링화', '아쿠아슈즈', '트레이닝화']
-        , ['부츠', '워커'], ['로퍼', '옥스퍼드', '컴포트화']]
-    musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
-
-    danawa['heelsize'] = None
-    danawa['price'] = None
-
-    for i in danawa.index:
-        splitmo = danawa['modelname'][i].split(' ')
-        for n in splitmo:
-            if re.match('.*\d{3,}.*', n):
-                danawa['shono'][i] = n
-                danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
-        #   신발 성별 추출
-        for n in shosex:
-            if n in danawa['prod_info'][i]:
-                danawa['shosex'][i] = n
-        #   굽 추출
-        splitinfo = danawa['prod_info'][i].split('/')
-        for n in splitinfo:
-            if ' 총굽: ' in n:
-                danawa['heelsize'][i] = n.strip()[3:]
-            #   가격추출
-            if ' 출시가: ' in n:
-                danawa['price'][i] = n.strip()[5:-1]
-
-        #   카테고리 무신사기준으로 변경
-        for n in range(0, len(danacate)):
-            for m in range(0, len(danacate[n])):
-                if danacate[n][m] in danawa['prod_info'][i]:
-                    danawa['category'][i] = musincate[n]
-
-        #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
-        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] not in shosex):
-            danawa.drop(i, axis=0, inplace=True)
-
-
-    danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
-
-
 def get_shoes_review(b_name, **kwargs):
 
     # 크롬 드라이버 옵션
@@ -176,7 +70,7 @@ def get_shoes_review(b_name, **kwargs):
             page = page + 1
             url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(prod_id)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
             driver.get(url)
-            time.sleep(3)
+            time.sleep(5)
             rvw_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
             rvw_list = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[2]/div[1]/div[2]')
 
@@ -223,7 +117,7 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 1, tzinfo=local_tz),
     'catchup': False,
-    'retries': 1,
+    'retries': 2,
     'retry_delay':timedelta(minutes=1)
 }    
     
@@ -236,13 +130,13 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(days=14)
+    , schedule_interval=timedelta(minutes=1)
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
     queue='qmaria',
     dag=dag
 )
@@ -250,21 +144,22 @@ start_notify = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
     queue='qmaria',
     dag=dag
+)
+# id 크롤링 종료 감지
+sensor = ExternalTaskSensor(
+      task_id='external_sensor'
+    , external_dag_id='danawa_id_crawling'
+    , external_task_id='end_notify'
+    , mode='reschedule'
+    , queue='qmaria'
+    , dag=dag
 )
 # DAG 동적 생성
 for b_name, page in brand_info.items():
     # 크롤링 DAG
-    id_crawling = PythonOperator(
-        task_id='{0}_id_crawling'.format(page),
-        python_callable=get_shoes_info,
-        op_kwargs={'b_name':b_name
-                    ,'page':page},
-        queue='q22',
-        dag=dag
-    )
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
@@ -272,19 +167,11 @@ for b_name, page in brand_info.items():
         queue='q22',
         dag=dag
     )
-    start_notify >> id_crawling>> review_crawling >> end_notify
+    sensor >> start_notify >> review_crawling >> end_notify
     
 # DAG 동적 생성
 for b_name, page in brand_info_split.items():
     # 크롤링 DAG
-    id_crawling = PythonOperator(
-        task_id='{0}_id_crawling'.format(page),
-        python_callable=get_shoes_info,
-        op_kwargs={'b_name':b_name
-                    ,'page':page},
-        queue='qmaria',
-        dag=dag
-    )
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
@@ -292,4 +179,4 @@ for b_name, page in brand_info_split.items():
         queue='qmaria',
         dag=dag
     )
-    start_notify >> id_crawling>> review_crawling >> end_notify
+    sensor >> start_notify >> review_crawling >> end_notify
