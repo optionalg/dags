@@ -59,7 +59,7 @@ def get_shoes_info(category, page, **kwargs):
     for prod_id_one in prod_id:
         url2 = 'https://store.musinsa.com/app/product/detail/' + str(prod_id_one) + '/0'
         driver.get(url2)
-        time.sleep(3)
+        time.sleep(5)
         
         # 모델이름
         prod_name = driver.find_element_by_class_name('product_title')
@@ -173,7 +173,7 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 1, tzinfo=local_tz),
     'catchup': False,
-    'retries': 1,
+    'retries': 2,
     'retry_delay':timedelta(minutes=1)
 }    
     

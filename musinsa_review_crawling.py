@@ -58,7 +58,7 @@ def get_shoes_review(category, **kwargs):
                 page_num = page_num + 1
                 url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
                 driver.get(url)
-                time.sleep(3)
+                time.sleep(5)
                 prod_rvw_date = driver.find_elements_by_class_name('date')
                 #prod_name = driver.find_elements_by_class_name('list_info.p_name')
                 prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
@@ -118,7 +118,7 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 1, tzinfo=local_tz),
     'catchup': False,
-    'retries': 1,
+    'retries': 2,
     'retry_delay':timedelta(minutes=1)
 }    
     
