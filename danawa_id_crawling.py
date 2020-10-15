@@ -192,7 +192,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'다나와 id 크롤링을 시작하였습니다.'},
     queue='qmaria',
     dag=dag
 )
@@ -200,7 +200,7 @@ start_notify = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'다나와 id 크롤링이 종료되었습니다.'},
     queue='qmaria',
     dag=dag
 )
