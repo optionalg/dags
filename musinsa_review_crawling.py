@@ -19,8 +19,6 @@ import requests
 category_info = {
       '구두' : '005014'
     , '부츠' : '005011'
-    , '힐' : '005012'
-    , '플랫' : '005017'
     , '로퍼' : '005015'
     , '샌들' : '005004'
     , '슬리퍼' : '005018'
@@ -28,6 +26,8 @@ category_info = {
 category_info_split = {
       '캔버스' : '018002'
     , '러닝화' : '018003'
+    , '힐' : '005012'
+    , '플랫' : '005017'
     , '스니커즈' : '018004'
 }
 
@@ -138,6 +138,7 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 리뷰 크롤링을 시작하였습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -145,6 +146,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 리뷰 크롤링이 종료되었습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # id 크롤링 종료 감지
@@ -163,7 +165,7 @@ for name, page in category_info_split.items():
         task_id='{0}_review_crawling'.format(page),
         python_callable=get_shoes_review,
         op_kwargs={'category':name},
-        queue='q20',
+        queue='qmaria',
         dag=dag
     )
     sensor >> start_notify >> review_crawling >> end_notify
