@@ -47,7 +47,8 @@ def get_shoes_info(category, page, **kwargs):
     prod_id = []
     url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=3000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
     driver.get(url)
-    time.sleep(60)
+    time.sleep(10)
+    drvier.implicitly_wait(60)
     prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.list_img > a > img')
     for q in prod_id_list:
         raw_prod_id = q.get_attribute("data-original")
@@ -59,12 +60,13 @@ def get_shoes_info(category, page, **kwargs):
     for prod_id_one in prod_id:
         url2 = 'https://store.musinsa.com/app/product/detail/' + str(prod_id_one) + '/0'
         driver.get(url2)
-        time.sleep(5)
+        time.sleep(1)
+        driver.implicitly_wait(10)
         # 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
         # prod_main_img = driver.find_element_by_css_selector('#bigimg')
         # img_url = prod_main_img.get_attribute('src')
         # r = requests.get(img_url)
-        # file = open("musinsa_img{}.jpg".format(str(prod_id)), "wb")
+        # file = open("musinsa_img_{}.jpg".format(str(prod_id)), "wb")
         # file.write(r.content)
         # file.close()
         prod_name = driver.find_element_by_class_name('product_title')
