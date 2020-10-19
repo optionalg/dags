@@ -7,7 +7,7 @@ import csv
 import datetime as dt
 from tqdm import tqdm
 
-# 무신사 id,emg
+# 네이버
 naver_brand ={'나이키': 1269, '아디다스': 20667, '탠디': 2014407, '뉴발란스': 2010946, 'XENIA': 2013840, '소다': 20759, '고세': 2010694, '엘칸토': 20544, '에스콰이아': 2013181
     , '미소페': 2011877, '푸마': 20126, '스케쳐스': 2012606, '닥스': 201217, '크록스': 2029750, '반스': 20923, '리복': 201056, '락포트': 2011294, '무크': 20135173, '발렌티노': 2012004
     , '아식스': 20654, '휠라': 207, '컨버스': 2014153, '세라': 2012439, '프로스펙스': 2014723, '핏플랍': 20157267, '구찌': 2010716, '골든구스': 20178717, '제옥스': 2030347, '프라다': 2014696
@@ -29,11 +29,10 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-gpu')
 options.add_argument(
     '--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
-driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver', options=options)
+driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 url_list = []
 for brand_num_list in brand_num_lists:
-
-    for page in tqdm(range(15)):
+    for page in tqdm(range(1,25)):
         url = 'https://search.shopping.naver.com/search/all?brand='+str(brand_num_list)+'&origQuery=%EC%8B%A0%EB%B0%9C&pagingIndex=' + str(
             page) + '&pagingSize=80&productSet=model&query=%EC%8B%A0%EB%B0%9C&sort=review&timestamp=&viewType=list'
         driver.get(url)
@@ -47,7 +46,7 @@ for brand_num_list in brand_num_lists:
     naver_info_and_rvw = []
     for prod_url in url_list:
         driver.get(prod_url)  # get = 이동시키는 역할
-        cnt = driver.find_elements_by_css_selector('#_review_list li.thumb_nail')
+        time.sleep(3)
         brands = driver.find_element_by_css_selector(
             '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(1) > em')
         prod_names = driver.find_element_by_css_selector(
@@ -58,17 +57,18 @@ for brand_num_list in brand_num_lists:
         # 1~136
         for page in range(1, 136):
             page_buttons = driver.find_elements_by_css_selector('#_review_paging a')
-            for i in range(0, len(cnt)):
-                try:
-                    prod_reviews = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
-                    prod_review_dates = driver.find_elements_by_css_selector(
-                        '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
-                    for prod_review, prod_review_date in zip(prod_reviews, prod_review_dates):
-                        prod_review_text = prod_review.text
-                        prod_review_date_text = prod_review_date.text
-                        time.sleep(3)
-                except:
-                    pass
+          
+            try : 
+                prod_review_lists = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
+                prod_infos = driver.find_element_by_css_selector('div.avg_area span.info')
+                for prod_review_list,prod_info in zip(prod_review_lists,prod_infos):
+                    prod_review_text = prod_review_list.text
+                    prod_info_text = prod_review_list.text
+                time.sleep(1)
+                driver.implicitly_wait(10)
+            
+            except : 
+                print()
 
             if page < 11:
                 page_buttons[page - 1].click()
@@ -84,9 +84,9 @@ for brand_num_list in brand_num_lists:
                 page_buttons[page % 10 + 1].click()
                 time.sleep(1.5)
                 driver.implicitly_wait(10)
-                naver_info_and_rvw.append([brand_text, prod_name_text, prod_review_date_text, prod_review_text])
+        naver_info_and_rvw.append([brand_text, prod_name_text,prod_info_text, prod_review_text])
 
-        refilename = f'/root/reviews/naver_{brand_text}'
+        refilename = f'/root/reviews/naver_{brand_text}.csv'
         f = open(refilename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
         csvWriter.writerow(['brand', 'prod_name', 'review_date', 'prod_review'])
