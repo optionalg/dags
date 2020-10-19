@@ -82,6 +82,7 @@ def get_shoes_info(category, page, **kwargs):
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
         prod_brand = driver.find_element_by_class_name('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
         prod_brand_text = prod_brand.text
+        prod_brand_clean = prod_brand_text.replace(' ','').replace('(','').replace(')','')
         id_and_brand_text = id_and_brand.text
         # prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
         try :
@@ -146,7 +147,7 @@ def get_shoes_info(category, page, **kwargs):
         else:
             modelname = prod_name_text # 모델명이 품번인 경우
             
-        prod_info.append([category, prod_brand_text, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
 
     filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
     f = open(filename, 'w', encoding='utf-8', newline='')
