@@ -227,9 +227,11 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 def review_crawling():
     startTime = time.time()
     name_data = pd.read_csv('./danawa_반스_id.csv', encoding='utf-8')
+    blog_brand = name_data['brand'][0]
     shoes_name = name_data['modelname']
 
-    for search_blog_keyword in shoes_name:
+    for shoes_keyword in shoes_name:
+        search_blog_keyword = blog_brand + " " + shoes_keyword
         naver_blog_crawling(search_blog_keyword, 100)
 
     endTime = time.time() - startTime
