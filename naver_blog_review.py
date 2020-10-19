@@ -61,6 +61,7 @@ def get_blog_search_result_page_count(search_blog_keyword, display_count):
         if response_body_dict['total'] == 0:
             # 검색 페이지 갯수
             blog_page_count = 0
+            blog_page_total_count = 0
 
         # 검색결과가 있을 시
         else:
@@ -68,14 +69,14 @@ def get_blog_search_result_page_count(search_blog_keyword, display_count):
             blog_page_total_count = math.ceil(response_body_dict['total'] / int(display_count))
 
             # 페이지 수가 100개 이상이면 페이지 수 = 100
-            if blog_page_total_count >= 100:
-                blog_page_count = 100
+            if blog_page_total_count >= 10:
+                blog_page_count = 10
             # 페이지 수가 100개 미만이면 그대로
             else:
                 blog_page_count = blog_page_total_count
 
         print("키워드 " + search_blog_keyword + " 총 포스팅 수 : " + str(response_body_dict['total']))
-        print("키워드 " + search_blog_keyword + " 실제 페이지 수 : " + str(blog_page_total_count))
+        print("키워드 " + search_blog_keyword + " 실제 페이지 수 : " + str(blog_page_total_count/100))
         print("키워드 " + search_blog_keyword + " 진행 가능한 페이지 수 : " + str(blog_page_count))
 
         # 가능한 페이지 수 리턴
@@ -94,7 +95,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
     encode_search_blog_keyword = urllib.parse.quote(search_blog_keyword + ' +사이즈')
 
     # 페이지 당 반복, url 크롤링
-    for i in range(1, search_result_blog_page_count):
+    for i in range(1, search_result_blog_page_count+1):
         try:
             if i == 1:
                 url = "https://openapi.naver.com/v1/search/blog?query=" + encode_search_blog_keyword + "&display=" + str(
@@ -150,7 +151,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
             print('반복 >> 재시도')
             traceback.print_exc()
             time.sleep(random.uniform(2, 4))
-            continue
+            break
 
     # 리뷰 크롤링
     for i in range(0, len(url_list)):
