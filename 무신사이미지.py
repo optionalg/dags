@@ -1,7 +1,0 @@
-# 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-prod_main_img = driver.find_element_by_css_selector('#bigimg')
-img_url = prod_main_img.get_attribute('src')
-r = requests.get(img_url)
-file = open("musinsa_img{}.jpg".format(str(prod_id)), "wb")
-file.write(r.content)
-file.close()
