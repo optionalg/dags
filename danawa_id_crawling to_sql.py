@@ -8,6 +8,12 @@ import csv
 import pandas as pd
 import numpy as np
 import datetime as dt
+import pymysql
+import glob, os
+from sqlalchemy import create_engine
+pymysql.install_as_MySQLdb()
+import MySQLdb
+
 
 # airflow 
 from airflow import DAG
@@ -129,7 +135,7 @@ def get_shoes_info(b_name, page, **kwargs):
             if re.match('.*[a-zA-Z]*.*\d+.*', n):
                 danawa['shono'][i] = n
                 if danawa['modelname'][i][0] == 'X':
-                    danawa['modelname'][i] = danawa['brand'][i] + ' '.join(splitmo[1:splitmo.index(n)])
+                    danawa['modelname'][i] = danawa['brand'][i] + ' ' + ' '.join(splitmo[1:splitmo.index(n)])
                 else:
                     danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
         #   신발 성별 추출
@@ -157,6 +163,31 @@ def get_shoes_info(b_name, page, **kwargs):
 
 
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
+
+    danapath = f'/root/reviews/danawa_*_id.csv'
+    dana_file_list = glob.glob(os.path.join(danapath))
+
+    dana_df_list = []
+    for file in dana_file_list:
+        tmp_df = pd.read_csv(file, index_col=0, thousands=',')
+        dana_df_list.append(tmp_df)
+
+    danawa_df = pd.concat(dana_df_list, axis=0, ignore_index=True)
+    del danawa_df['prod_info']
+
+    danawa_df.rename(columns={
+        'price': 'price_d'
+    }
+        , inplace=True
+    )
+
+    # 마리아디비로 전송
+
+    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
+    conn = engine.connect()
+    danawa_df.to_sql(name='danawaid', con=engine, if_exists='append', index=False)
+
+    conn.close()
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
