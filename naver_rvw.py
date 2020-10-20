@@ -6,6 +6,7 @@ import time
 import csv
 import datetime as dt
 from tqdm import tqdm
+import requests
 
 # 네이버
 naver_brand ={'나이키': 1269, '아디다스': 20667, '탠디': 2014407, '뉴발란스': 2010946, 'XENIA': 2013840, '소다': 20759, '고세': 2010694, '엘칸토': 20544, '에스콰이아': 2013181
@@ -57,18 +58,29 @@ for brand_name_list,brand_num_list in naver_brand.items():
         driver.get(url_list)  # get = 이동시키는 역할
         time.sleep(3)
         driver.implicitly_wait(10)
+        prod_name = driver.find_element_by_css_selector(
+            '#container > div.summary_area > div.summary_info._itemSection > div > div.h_area > h2')
+        prod_name_text = prod_name.text
+        brand = driver.find_element_by_css_selector(
+            '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(2) > em')
+        brand_text = brand.text
+
+
+        # 네이버 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
+        prod_main_img = driver.find_elements_by_css_selector('#viewImage')
+        img_url = prod_main_img.get_attribute('src')
+        r = requests.get(img_url)
+        file = open("naver_img_{}.jpg".format(str(prod_name_text)), "wb")
+        file.write(r.content)
+        file.close()
+
 
         end_page_find = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
-        end_page = int(end_page_find.text) / 15
+        end_page = int(end_page_find.text) / 20
         for page in range(1, int(end_page)):
             driver.execute_script(f"shop.detail.ReviewHandler.page({page}, '_review_paging'); return false;")
-            time.sleep(3)
-            prod_name = driver.find_element_by_css_selector(
-                '#container > div.summary_area > div.summary_info._itemSection > div > div.h_area > h2')
-            prod_name_text = prod_name.text
-            brand = driver.find_element_by_css_selector(
-                '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(2) > em')
-            brand_text = brand.text
+            time.sleep(5)
+
             prod_infos = driver.find_elements_by_css_selector(
                 '#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
             review_dates = driver.find_elements_by_css_selector(
