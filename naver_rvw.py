@@ -59,11 +59,14 @@ for brand_num_list in brand_num_lists:
             page_buttons = driver.find_elements_by_css_selector('#_review_paging a')
           
             try : 
+                prod_review_dates = driver.find_elements_by_css_selector(
+                        '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
                 prod_review_lists = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
                 prod_infos = driver.find_element_by_css_selector('div.avg_area span.info')
-                for prod_review_list,prod_info in zip(prod_review_lists,prod_infos):
+                for prod_review_list,prod_info,prod_review_date in zip(prod_review_lists,prod_infos,prod_review_dates):
                     prod_review_text = prod_review_list.text
                     prod_info_text = prod_review_list.text
+                    prod_date_text = prod_review_date.text
                 time.sleep(1)
                 driver.implicitly_wait(10)
             
@@ -84,12 +87,12 @@ for brand_num_list in brand_num_lists:
                 page_buttons[page % 10 + 1].click()
                 time.sleep(1.5)
                 driver.implicitly_wait(10)
-        naver_info_and_rvw.append([brand_text, prod_name_text,prod_info_text, prod_review_text])
+        naver_info_and_rvw.append([brand_text, prod_name_text,prod_info_text,prod_date_text, prod_review_text])
 
         refilename = f'/root/reviews/naver_{brand_text}.csv'
         f = open(refilename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
-        csvWriter.writerow(['brand', 'prod_name', 'review_date', 'prod_review'])
+        csvWriter.writerow(['brand', 'prod_name', 'review_info','review_date', 'prod_review'])
         for w in naver_info_and_rvw:
             csvWriter.writerow(w)
         f.close()
