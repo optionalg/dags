@@ -171,7 +171,7 @@ def get_shoes_info(category, page, **kwargs):
     musin_df_list = []
     for file in musin_file_list:
         tmp_df = pd.read_csv(file, index_col=0, thousands=',')
-        tmp_df['category'] = file.split('_')[1]
+        tmp_df['category'] = file.split('_')[1].strip()
         musin_df_list.append(tmp_df)
 
     musinsa_df = pd.concat(musin_df_list, axis=0, ignore_index=True)
