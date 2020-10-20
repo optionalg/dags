@@ -44,6 +44,7 @@ naver_brand ={'나이키': 1269, '아디다스': 20667, '탠디': 2014407, '뉴�
 
 url_list = []
 for brand_name_list,brand_num_list in naver_brand.items():
+    naver_info_and_rvw = []
     for page in range(15):
         url = 'https://search.shopping.naver.com/search/all?brand='+str(brand_num_list)+'&origQuery=%EC%8B%A0%EB%B0%9C&pagingIndex=' + str(page) + '&pagingSize=80&productSet=model&query=%EC%8B%A0%EB%B0%9C&sort=review&timestamp=&viewType=list'
         driver.get(url)
@@ -56,35 +57,28 @@ for brand_name_list,brand_num_list in naver_brand.items():
         driver.get(url_list)  # get = 이동시키는 역할
         time.sleep(3)
         driver.implicitly_wait(10)
-        naver_info_and_rvw = []
 
-        page = 1
-        while True:
+        end_page_find = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
+        end_page = int(end_page_find.text) / 15
+        for page in range(1, int(end_page)):
+            driver.execute_script(f"shop.detail.ReviewHandler.page({page}, '_review_paging'); return false;")
+            time.sleep(3)
             prod_name = driver.find_element_by_css_selector(
                 '#container > div.summary_area > div.summary_info._itemSection > div > div.h_area > h2')
             prod_name_text = prod_name.text
             brand = driver.find_element_by_css_selector(
                 '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(2) > em')
             brand_text = brand.text
-            prod_infos = driver.find_elements_by_css_selector('#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
+            prod_infos = driver.find_elements_by_css_selector(
+                '#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
             review_dates = driver.find_elements_by_css_selector(
                 '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
             reviews = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
-            for review_date, prod_info ,review in zip(review_dates,prod_infos ,reviews):
+            for review_date, prod_info, review in zip(review_dates, prod_infos, reviews):
                 review_date_text = review_date.text
                 prod_info_text = prod_info.text
                 review_text = review.text
-                naver_info_and_rvw.append([brand_text, prod_name_text, review_date_text,prod_info_text, review_text])
-            try:
-                if page == 11:
-                    page_buttons = driver.find_element_by_css_selector('#_review_paging > a.next').click()
-                else:
-                    page += 1
-                    page_buttons = driver.find_element_by_css_selector(f'#_review_paging > a:nth-child({str(page)})').click()
-                time.sleep(3)
-            except:
-                break
-        driver.close()
+                naver_info_and_rvw.append([brand_text, prod_name_text, review_date_text, prod_info_text, review_text])
 
     refilename = f'/root/reviews/naver_{brand_name_list}.csv'
     f = open(refilename, 'w', encoding='utf-8', newline='')
