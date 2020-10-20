@@ -32,19 +32,23 @@ options.add_argument(
 driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 url_list = []
 for brand_num_list in brand_num_lists:
-    for page in tqdm(range(1,25)):
-        url = 'https://search.shopping.naver.com/search/all?brand='+str(brand_num_list)+'&origQuery=%EC%8B%A0%EB%B0%9C&pagingIndex=' + str(
-            page) + '&pagingSize=80&productSet=model&query=%EC%8B%A0%EB%B0%9C&sort=review&timestamp=&viewType=list'
-        driver.get(url)
-        time.sleep(3)
-        prod_url_list = driver.find_elements_by_css_selector(
-            '#__next > div > div.container > div.style_inner__18zZX > div.style_content_wrap__1PzEo > div.style_content__2T20F > ul > div > div > li > div > div.basicList_img_area__a3NRA > div > a')
-        for prod_url_attr in prod_url_list:
-            base_url = prod_url_attr.get_attribute('href')
-            url_list.append(base_url)
+    for page in tqdm(range(1,25)): # 페이지당 80개
+        try:
+            url = 'https://search.shopping.naver.com/search/all?brand='+str(brand_num_list)+'&origQuery=%EC%8B%A0%EB%B0%9C&pagingIndex=' + str(
+                page) + '&pagingSize=80&productSet=model&query=%EC%8B%A0%EB%B0%9C&sort=review&timestamp=&viewType=list'
+            driver.get(url)
+            time.sleep(3)
+            prod_url_list = driver.find_elements_by_css_selector(
+                '#__next > div > div.container > div.style_inner__18zZX > div.style_content_wrap__1PzEo > div.style_content__2T20F > ul > div > div > li > div > div.basicList_img_area__a3NRA > div > a')
+            for prod_url_attr in prod_url_list:
+                base_url = prod_url_attr.get_attribute('href')
+                url_list.append(base_url)
+        except:
+            pass
 
-    naver_info_and_rvw = []
+
     for prod_url in url_list:
+        naver_info_and_rvw = []
         driver.get(prod_url)  # get = 이동시키는 역할
         time.sleep(3)
         brands = driver.find_element_by_css_selector(
@@ -54,21 +58,9 @@ for brand_num_list in brand_num_lists:
         brand_text = brands.text
         prod_name_text = prod_names.text
         # page: 페이지수 ex(1, 11): 1~10페이지 크롤링
-        # 1~136
-        for page in range(1, 136):
+        
+        for page in range(1, 130): # 가장 많은 리뷰가 136페이지라서 조정
             page_buttons = driver.find_elements_by_css_selector('#_review_paging a')
-          
-            try : 
-                prod_review_lists = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
-                prod_infos = driver.find_element_by_css_selector('div.avg_area span.info')
-                for prod_review_list,prod_info in zip(prod_review_lists,prod_infos):
-                    prod_review_text = prod_review_list.text
-                    prod_info_text = prod_review_list.text
-                time.sleep(1)
-                driver.implicitly_wait(10)
-            
-            except : 
-                print()
 
             if page < 11:
                 page_buttons[page - 1].click()
@@ -84,13 +76,28 @@ for brand_num_list in brand_num_lists:
                 page_buttons[page % 10 + 1].click()
                 time.sleep(1.5)
                 driver.implicitly_wait(10)
-        naver_info_and_rvw.append([brand_text, prod_name_text,prod_info_text, prod_review_text])
+                
+            try : 
+                prod_review_dates = driver.find_elements_by_css_selector(
+                        '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
+                prod_review_lists = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
+                prod_infos = driver.find_element_by_css_selector('div.avg_area span.info')
+                for prod_review_list,prod_info,prod_review_date in zip(prod_review_lists,prod_infos,prod_review_dates):
+                    prod_review_text = prod_review_list.text
+                    prod_info_text = prod_review_list.text
+                    prod_date_text = prod_review_date.text
+                time.sleep(1)
+                driver.implicitly_wait(10)
+            
+            except : 
+                pass
+                
+        naver_info_and_rvw.append([brand_text, prod_name_text,prod_info_text,prod_date_text, prod_review_text])
 
         refilename = f'/root/reviews/naver_{brand_text}.csv'
         f = open(refilename, 'w', encoding='utf-8', newline='')
         csvWriter = csv.writer(f)
-        csvWriter.writerow(['brand', 'prod_name', 'review_date', 'prod_review'])
+        csvWriter.writerow(['brand', 'prod_name', 'review_info','review_date', 'prod_review'])
         for w in naver_info_and_rvw:
             csvWriter.writerow(w)
         f.close()
-print('완료')
