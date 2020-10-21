@@ -214,8 +214,6 @@ def get_shoes_info(category, page, **kwargs):
     conn = engine.connect()
     try:
         musinsa_df.to_sql(name='musinsaid', con=engine, if_exists='append', index=False)
-    except:
-        pass
     finally:
         conn.close()
     

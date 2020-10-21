@@ -190,8 +190,6 @@ def get_shoes_info(b_name, page, **kwargs):
     conn = engine.connect()
     try:
         danawa_df.to_sql(name='danawaid', con=engine, if_exists='append', index=False)
-    except:
-        pass
     finally:
         conn.close()
 
