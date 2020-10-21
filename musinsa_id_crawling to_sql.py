@@ -212,9 +212,10 @@ def get_shoes_info(category, page, **kwargs):
 
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
-    musinsa_df.to_sql(name='musinsaid', con=engine, if_exists='append', index=False)
-
-    conn.close()
+    try:
+        musinsa_df.to_sql(name='musinsaid', con=engine, if_exists='append', index=False)
+    finally:
+        conn.close()
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
