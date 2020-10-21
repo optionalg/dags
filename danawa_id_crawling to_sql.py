@@ -188,9 +188,12 @@ def get_shoes_info(b_name, page, **kwargs):
 
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
-    danawa_df.to_sql(name='danawaid', con=engine, if_exists='append', index=False)
-
-    conn.close()
+    try:
+        danawa_df.to_sql(name='danawaid', con=engine, if_exists='append', index=False)
+    except:
+        pass
+    finally:
+        conn.close()
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
