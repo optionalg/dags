@@ -143,9 +143,9 @@ end_notify = PythonOperator(
     dag=dag
 )
 
-# 실행 순서 설정
+# DAG 동적 생성
 for category_name, category_page in category_info.items():
-    # 크롤링 코드 동작
+    # 크롤링 DAG
     crawling_code = PythonOperator(
         task_id='crawling_{0}'.format(category_name),
         python_callable=get_shoe_model_list,

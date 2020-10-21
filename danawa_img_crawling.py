@@ -43,7 +43,7 @@ brand_info_split = {
     , '아디다스' : '10851', '수페르가' : '10750', '뉴발란스' : '13760', '라그라치아' : '11681188', '휠라' : '10789'
 }
 
-def get_shoes_review(b_name, **kwargs):
+def get_shoes_img(b_name, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -51,46 +51,36 @@ def get_shoes_review(b_name, **kwargs):
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-gpu')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
-    driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
+    # 드라이버 위치도 맞출 것
+    driver = webdriver.Chrome('드라이버 위치',options=options)
 
-    # prod_id 불러오기
-    danawa_prod_id_path = '/root/reviews/danawa_{}_id.csv'.format(b_name)
+    # prod_id 불러오기 - 자신의 환경에 맞는 위치로 설정할것
+    danawa_prod_id_path = r'/root/reviews/danawa_{}_id.csv'.format(b_name)
     prod_dataframe = pd.read_csv(danawa_prod_id_path)
     prod_ids = prod_dataframe['danawa_id']
 
-    danawa_reviews = []
-
-    #progress = 0
-    #progress_check = 0
-
     for prod_id in prod_ids:
-        #img_url_list = []
+        img_url_list = []
         page = 0
         while True:
             page = page + 1
             url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(prod_id)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
             driver.get(url)
-            time.sleep(1)
-            driver.implicitly_wait(10)
-            rvw_date = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[1]/span[2]')
-            rvw_list = driver.find_elements_by_xpath('/html/body/div/div[3]/div[2]/ul/li/div[2]/div[1]/div[2]')
+            time.sleep(3)
+            danawa_img_list = driver.find_elements_by_class_name('center > img')
+            for img_src in danawa_img_list:
+                danawa_img_url = img_src.get_attribute('src')
+                img_url_list.append(danawa_img_url)
+                
+        n = 0
+        for url in img_url_list:
+            n = n + 1
+            r = requests.get(url)
+            file = open(r'/root/img/danawa_{0}_{1}.jpg'.format(prod_id, n), 'wb')
+            file.write(r.content)
+            file.close()
+            
 
-            try:
-                no_data = driver.find_element_by_class_name('no_data')
-                if no_data != None:
-                    break
-            except:
-                pass
-            for q,w in zip(rvw_date,rvw_list):
-                danawa_reviews.append([prod_id,q.text,w.text])
-
-    filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['danawa_id','review_date','reviews'])
-    for i in danawa_reviews:
-        csvWriter.writerow(i)
-    f.close()
     driver.close()
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
@@ -125,7 +115,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='danawa_review_crawling'
+      dag_id='danawa_img_crawling'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
@@ -137,7 +127,7 @@ dag = DAG(
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'다나와 이미지 크롤링을 시작하였습니다.'},
     queue='qmaria',
     dag=dag
 )
@@ -145,25 +135,17 @@ start_notify = PythonOperator(
 end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
+    op_kwargs={'context':'다나와 이미지 크롤링이 종료되었습니다.'},
     queue='qmaria',
     dag=dag
 )
-# id 크롤링 종료 감지
-sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='danawa_id_crawling'
-    , external_task_id='end_notify'
-    , mode='reschedule'
-    , queue='qmaria'
-    , dag=dag
-)
+
 # DAG 동적 생성
 for b_name, page in brand_info.items():
     # 크롤링 DAG
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(page),
-        python_callable=get_shoes_review,
+        task_id='{0}_img_crawling'.format(page),
+        python_callable=get_shoes_img,
         op_kwargs={'b_name':b_name},
         queue='q22',
         dag=dag
@@ -174,8 +156,8 @@ for b_name, page in brand_info.items():
 for b_name, page in brand_info_split.items():
     # 크롤링 DAG
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(page),
-        python_callable=get_shoes_review,
+        task_id='{0}_img_crawling'.format(page),
+        python_callable=get_shoes_img,
         op_kwargs={'b_name':b_name},
         queue='qmaria',
         dag=dag

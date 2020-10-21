@@ -1,11 +1,11 @@
 # crawling
 import pandas as pd
-import numpy
-from selenium import webdriver
+import numpy as np
 import re
 import time
 import csv
 import datetime as dt
+from bs4 import BeautifulSoup
 
 # airflow 
 from airflow import DAG
@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import sys
 import pendulum
 import requests
+
 
 category_info = {
       '구두' : '005014'
@@ -33,57 +34,57 @@ category_info_split = {
 
 
 def get_shoes_review(category, **kwargs):
-    now = dt.datetime.now()
+#     now = dt.datetime.now()
     prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_id.csv'.format(category))
     prod_ids = prod_id_csv['musinsa_id']
 
-    # 크롬 드라이버 옵션
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument("--disable-gpu")
-    options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
     style_list = ['photo','goods']
 
     for style in style_list:
-    
         musinsa_rvw_list = []
         
         for prod_id in prod_ids:
-            
             page_num = 0
+
             while True:
                 page_num = page_num + 1
+                now = dt.datetime.now()
+                
                 url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
-                driver.get(url)
-                time.sleep(1)
-                driver.implicitly_wait(10)
-                prod_rvw_date = driver.find_elements_by_class_name('date')
-                #prod_name = driver.find_elements_by_class_name('list_info.p_name')
-                prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
-                prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
-                prod_rvw = driver.find_elements_by_class_name('content-review')
+                re_url = requests.get(url)
+                re_url_html = re_url.text
+
+                soup = BeautifulSoup(re_url_html, 'html.parser')
+
+                prod_rvw_date = soup.select('.date')
+                prod_cust_buy_size = soup.select('.txt_option')
+                prod_size_jud = soup.select('.prd-level-each')
+                prod_rvw = soup.select('.content-review')
+
                 #모델이름
                 try:
-                    no_data = driver.find_element_by_class_name('mypage_review_none')
+                    no_data = soup.select('.mypage_review_none')
                     if no_data != None:
-                        break
+                        pass
 
                 except:
                     pass
+
                 for prod_size_jud_split in prod_size_jud:
                     prod_size_jud_text = prod_size_jud_split.text
                     try:
-                        test = prod_size_jud_text.split('\n')
+                        test = prod_size_jud_text.strip().split('\n')
                         size = test[0]
                         footwidth = test[3]
                         ignition = test[4]
+
                     except:
                         pass
                 for q,e,r in zip(prod_rvw_date,prod_cust_buy_size,prod_rvw):
-                    musinsa_rvw_list.append([q.text, prod_id, e.text, size, footwidth, ignition, r.text])
+                    musinsa_rvw_list.append\
+                    ([q.text.replace('\t', '').replace('\n', ''), prod_id, e.text.replace('\t', '').replace('\n', ''), \
+                      size, footwidth, ignition, r.text.replace('\t', '').replace('\n', '')])
+
 
         filename = f'/root/reviews/musinsa_{style}_{category}_reviews.csv'
         f = open(filename, 'w', encoding='utf-8', newline='')
@@ -92,8 +93,8 @@ def get_shoes_review(category, **kwargs):
         for w in musinsa_rvw_list:
             csvWriter.writerow(w)
         f.close()
-    driver.close()
-    
+
+
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
@@ -181,5 +182,18 @@ for name, page in category_info.items():
         queue='q22',
         dag=dag
     )
-    sensor >> start_notify >> review_crawling >> end_notify
-    
+    sensor >> start_notify >> review_crawling >> end_notify        
+        
+        
+#                 date_str = str(prod_rvw_date.text)
+                
+#                 date_time_obj = datetime.datetime.strptime(date_str, '%Y.%m.%d %H:%M')
+
+#                 if date_time_obj > now:
+#                     print('크다')
+
+#                 elif date_time_obj < now:
+#                     print('작다')
+
+#                 else:
+#                     print('오류')
