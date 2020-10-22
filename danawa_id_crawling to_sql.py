@@ -187,7 +187,6 @@ def get_shoes_info(b_name, page, **kwargs):
 
 
     # 마리아디비로 전송
-
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:

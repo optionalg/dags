@@ -10,14 +10,14 @@ try:
             , price_d, minsize, maxsize, sizeunit, heelsize, musinsa_id, danawa_id)
             (select m.brand, m.shono, m.modelname, m.category, m.shosex, m.price_m
             , d.price_d, m.minsize, m.maxsize, m.sizeunit, d.heelsize, m.musinsa_id, d.danawa_id
-              from musinsaid as m
-            left outer join danawaid as d
+              from musinsa_shoes as m
+            left outer join danawa_shoes as d
             on m.shono=d.shono and m.brand=d.brand
             UNION
             select d.brand, d.shono, d.modelname, d.category, d.shosex, m.price_m, d.price_d
             , m.minsize, m.maxsize, m.sizeunit, d.heelsize, m.musinsa_id, d.danawa_id
-              from musinsaid as m
-            right outer join danawaid as d
+              from musinsa_shoes as m
+            right outer join danawa_shoes as d
                 on m.shono=d.shono and m.brand=d.brand);
         """
         curs.execute(sql)
