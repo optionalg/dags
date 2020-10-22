@@ -65,12 +65,14 @@ for brand_name_list,brand_num_list in naver_brand.items():
         file.close()
 
 
-        end_page_find = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
-        end_page = int(end_page_find.text) / 20
-        for page in range(1, int(end_page)):
-            driver.execute_script(f"shop.detail.ReviewHandler.page({page}, '_review_paging'); return false;")
-            time.sleep(5)
-
+        all_review_counts = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
+        end_page = int(all_review_counts.text) / 20
+        try:
+            for page in range(1, int(end_page)):
+                driver.execute_script(f"shop.detail.ReviewHandler.page({page+1}, '_review_paging'); return false;")
+                time.sleep(5)
+        except:
+            pass
             prod_infos = driver.find_elements_by_css_selector(
                 '#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
             review_dates = driver.find_elements_by_css_selector(
