@@ -182,7 +182,6 @@ def get_shoes_info(b_name, page, **kwargs):
     )
 
     danawa_df.loc[danawa_df["brand"] == "MLB","brand"] = "엠엘비"
-
     danawa_df.drop_duplicates(inplace=True)
 
 
@@ -190,7 +189,7 @@ def get_shoes_info(b_name, page, **kwargs):
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
-        danawa_df.to_sql(name='danawaid', con=engine, if_exists='append', index=False)
+        danawa_df.to_sql(name='danawa_shoes', con=engine, if_exists='replace', index=False)
     finally:
         conn.close()
 

@@ -213,7 +213,7 @@ def get_shoes_info(category, page, **kwargs):
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
-        musinsa_df.to_sql(name='musinsaid', con=engine, if_exists='append', index=False)
+        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='replace', index=False)
     finally:
         conn.close()
     
