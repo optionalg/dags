@@ -181,6 +181,8 @@ def get_shoes_info(b_name, page, **kwargs):
         , inplace=True
     )
 
+    danawa_df.loc[danawa_df["brand"] == "MLB","brand"] = "엠엘비"
+
     danawa_df.drop_duplicates(inplace=True)
 
 
