@@ -61,8 +61,8 @@ def get_shoes_info(b_name, page):
     for i in range(1,16):
         url = 'http://search.danawa.com/dsearch.php?query=%EC%8B%A0%EB%B0%9C&originalQuery=%EC%8B%A0%EB%B0%9C&previousKeyword=%EC%8B%A0%EB%B0%9C&volumeType=allvs&page='+str(i)+'&limit=120&sort=opinionDESC&list=list&boost=true&addDelivery=N&brand='+str(page)+'&tab=main'
         driver.get(url)
-        time.sleep(1)
-        driver.implicitly_wait(10)
+        time.sleep(2)
+        driver.implicitly_wait(20)
         try:
             nosearchArea = driver.find_element_by_selector('#nosearchArea')
             break
@@ -123,11 +123,11 @@ def get_shoes_info(b_name, page):
     danawa['price'] = None
 
     for i in danawa.index:
-        splitmo = danawa['modelname'][i].split(' ')
+        splitmo = danawa['modelname'][i].split(' ') # 에러
         for n in splitmo:
             if re.match('.*[a-zA-Z]*.*\d+.*', n):
                 danawa['shono'][i] = n
-                if danawa['modelname'][i][0] == 'X':
+                if danawa['modelname'][i][0] == 'X': # 에러
                     danawa['modelname'][i] = danawa['brand'][i] + ' ' + ' '.join(splitmo[1:splitmo.index(n)])
                 else:
                     danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
@@ -260,7 +260,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='danawa_id_crawling'
+      dag_id='danawa_id_crawling_to_sql'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
