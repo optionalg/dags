@@ -47,15 +47,15 @@ def get_shoes_review(category, prod_ids):
     options.add_argument("--disable-gpu")
     options.add_argument('--disable-dev-shm-usage')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
+
     style_list = ['photo','goods']
 
     for style in style_list:
-    
+
         musinsa_rvw_list = []
-        
+
         for prod_id in prod_ids:
-            
+
             page_num = 0
             while True:
                 page_num = page_num + 1
@@ -143,9 +143,60 @@ def get_category_prod_ids():
             curs.execute(select_musinsa_id, category)
             ids = curs.fetchall()
 
-            prod_ids = []
+    finally:
+        con.close()
+
+    distribute_task(category, ids)
+
+
+def distribute_task(category, ids):
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
+
+    try:
+        with conn.cursor() as curs:
+            prod_ids_all = []
             for i in range(0, len(ids)):
-                prod_ids.append(ids[i][0])
+                prod_ids_all.append(ids[i][0])
+            try:
+                create_seq = """
+                    CREATE SEQUENCE seq_task_unit INCREMENT BY 500 MINVALUE 0;
+                """
+                curs.execute(create_seq)
+
+                create_seq2 = """
+                    CREATE SEQUENCE seq_task_unit2 INCREMENT BY 500 MINVALUE 500;
+                """
+                curs.execute(create_seq2)
+            except:
+                pass
+
+            select_start_point = """
+                SELECT NEXTVAL(seq_task_unit)
+            """
+            curs.execute(select_start_point)
+            start_point = curs.fetchone()[0]
+
+            select_end_point = """
+                SELECT NEXTVAL(seq_task_unit2)
+            """
+            curs.execute(select_end_point)
+            end_point = curs.fetchone()[0]
+
+            try:
+                prod_ids = prod_ids_all[start_point:end_point]
+            except:
+                prod_ids = prod_ids_all[start_point:]
+
+                drop_seq = """
+                    DROP SEQUENCE seq_task_unit;
+                """
+                curs.execute(drop_seq)
+
+                drop_seq2 = """
+                    DROP SEQUENCE seq_task_unit2;
+                """
+                curs.execute(drop_seq2)
 
     finally:
         conn.close()
@@ -154,7 +205,7 @@ def get_category_prod_ids():
 
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, **kwargs): 
+def notify(context, **kwargs):
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -180,8 +231,8 @@ default_args = {
     'catchup': False,
     'retries': 2,
     'retry_delay':timedelta(minutes=1)
-}    
-    
+}
+
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
@@ -219,7 +270,7 @@ sensor = ExternalTaskSensor(
     , dag=dag
 )
 
-    
+
 # DAG 동적 생성
 count = get_musinsa_category_count()
 for i in range(0, count):
@@ -230,4 +281,4 @@ for i in range(0, count):
         dag=dag
     )
     sensor >> start_notify >> review_crawling >> end_notify
-    
+
