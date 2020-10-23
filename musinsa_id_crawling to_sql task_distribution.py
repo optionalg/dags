@@ -20,46 +20,26 @@ import sys
 import pendulum
 import requests
 
-
-# DB에서 category, page 갖고오기
-
-def get_category_page():
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+def get_musinsa_category_count():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
 
     try:
         with conn.cursor() as curs:
-            create_seq = """
-                CREATE SEQUENCE seq_musinsa_category START WITH 1 INCREMENT BY 1 MAXVALUE 10;
+            select_count = """
+                SELECT count(*) from musinsa_category;
             """
-            curs.execute(create_seq)
-
-            nextval = """
-                SELECT NEXTVAL(seq_musinsa_category);
-            """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
-
-            select_brand = """
-                SELECT category, page
-                  FROM musinsa_category
-                 WHERE idx=%s;
-            """
-            curs.execute(select_brand, next_val)
-            category, page = curs.fetchone()
-
-            if next_val == 10:
-                        drop_seq = """
-                            DROP SEQUENCE seq_musinsa_category;
-                        """
-                        curs.execute(drop_seq)
+            curs.execute(select_count)
+            count = curs.fetchone()[0]
 
     finally:
         conn.close()
 
-    return category, page
+    return count
+
 
 # 무신사 모델 정보 뽑기
-def get_shoes_info(category, page, **kwargs):
+def get_shoes_info(category, page):
     
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -238,6 +218,44 @@ def get_shoes_info(category, page, **kwargs):
         musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='replace', index=False)
     finally:
         conn.close()
+
+
+# DB에서 category, page 갖고오기
+
+def get_category_page():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+
+    try:
+        with conn.cursor() as curs:
+            create_seq = """
+                CREATE SEQUENCE seq_musinsa_category START WITH 1 INCREMENT BY 1;
+            """
+            curs.execute(create_seq)
+
+            nextval = """
+                SELECT NEXTVAL(seq_musinsa_category);
+            """
+            curs.execute(nextval)
+            next_val = curs.fetchone()[0]
+
+            try:
+                select_brand = """
+                    SELECT category, page
+                      FROM musinsa_category
+                     WHERE idx=%s;
+                """
+                curs.execute(select_brand, next_val)
+                category, page = curs.fetchone()
+            except:
+                drop_seq = """
+                    DROP SEQUENCE seq_musinsa_category;
+                """
+                curs.execute(drop_seq)
+
+    finally:
+        conn.close()
+
+    get_shoes_info(category, page)
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
@@ -300,12 +318,11 @@ end_notify = PythonOperator(
 # DAG 동적 생성
 
 # 크롤링 DAG
+count = get_musinsa_category_count()
+
 id_crawling = PythonOperator(
-    task_id='{0}_id_crawling'.format(page),
-    python_callable=get_category_page()
-    op_kwargs={'category':category
-              ,'page':page},
-    queue='q22',
+    task_id='{0}_id_crawling'.format(count),
+    python_callable=get_category_page
     dag=dag
 )
 start_notify >> id_crawling>> end_notify
