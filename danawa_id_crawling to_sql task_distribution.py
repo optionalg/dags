@@ -25,7 +25,7 @@ import requests
 
 # DB에서 b_name, page 갖고 오기
 
-def danawa_brand_count():
+def get_danawa_brand_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -226,7 +226,7 @@ def get_b_name_page():
         conn.close()
 
     get_shoes_info(b_name, page)
-    
+
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
@@ -283,9 +283,11 @@ end_notify = PythonOperator(
     queue='qmaria',
     dag=dag
 )
+
+
 # DAG 동적 생성
 # 크롤링 DAG
-count = danawa_brand_count()
+count = get_danawa_brand_count()
 
 for count in range(0, count):
     id_crawling = PythonOperator(
