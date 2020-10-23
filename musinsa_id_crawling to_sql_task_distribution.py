@@ -292,7 +292,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='musinsa_id_crawling'
+      dag_id='musinsa_id_crawling_to_sql'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
@@ -325,7 +325,7 @@ count = get_musinsa_category_count()
 for count in range(0, count):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
-        python_callable=get_category_page
+        python_callable=get_category_page,
         dag=dag
     )
     start_notify >> id_crawling>> end_notify

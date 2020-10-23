@@ -152,4 +152,4 @@ end_notify = PythonOperator(
 )
 
 # 실행 순서 설정
-start_notify >> id_crawling_code >> review_crawling_code >> end_notify
+start_notify >> review_crawling_code >> end_notify
