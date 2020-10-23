@@ -23,8 +23,6 @@ import sys
 import pendulum
 import requests
 
-# DB에서 b_name, page 갖고 오기
-
 def get_danawa_brand_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
