@@ -194,10 +194,13 @@ def get_b_name_page():
 
     try:
         with conn.cursor() as curs:
-            create_seq = """
-                CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
-            """
-            curs.execute(create_seq)
+            try:
+                create_seq = """
+                    CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
+            except:
+                pass
 
             nextval = """
                 SELECT NEXTVAL(seq_danawa_id);
