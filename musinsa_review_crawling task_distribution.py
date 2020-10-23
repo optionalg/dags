@@ -249,7 +249,6 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 리뷰 크롤링을 시작하였습니다.'},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -267,12 +266,9 @@ for i in range(0, count):
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=get_category_prod_ids,
+        queue='q22',
         dag=dag
     )
-<<<<<<< HEAD
-    sensor >> start_notify >> review_crawling >> end_notify
 
-=======
     start_notify >> review_crawling >> end_notify
-    
->>>>>>> c55c4a269d57a32144bae93afaaf9c3767d9d025
+

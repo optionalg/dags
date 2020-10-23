@@ -167,7 +167,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='danawa_review_crawling_from_sql'
+      dag_id='danawa_review_crawling'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
@@ -180,6 +180,7 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
+    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -187,10 +188,20 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
+    queue='qmaria',
     dag=dag
 )
-
+# id 크롤링 종료 감지
+sensor = ExternalTaskSensor(
+      task_id='external_sensor'
+    , external_dag_id='danawa_id_crawling'
+    , external_task_id='end_notify'
+    , mode='reschedule'
+    , queue='qmaria'
+    , dag=dag
+)
 # DAG 동적 생성
+
 # 크롤링 DAG
 count = get_danawa_brand_count()
 
@@ -200,6 +211,6 @@ for count in range(0, count):
         python_callable=get_b_name_prod_ids,
         dag=dag
     )
-    start_notify >> review_crawling >> end_notify
+sensor >> start_notify >> review_crawling >> end_notify
     
 
