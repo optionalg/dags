@@ -265,7 +265,6 @@ for i in range(0, count):
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=get_category_prod_ids,
-        queue='q22',
         dag=dag
     )
 
