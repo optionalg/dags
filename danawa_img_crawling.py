@@ -162,4 +162,4 @@ for b_name, page in brand_info_split.items():
         queue='qmaria',
         dag=dag
     )
-    sensor >> start_notify >> review_crawling >> end_notify
+    start_notify >> review_crawling >> end_notify
