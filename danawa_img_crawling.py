@@ -150,7 +150,7 @@ for b_name, page in brand_info.items():
         queue='q22',
         dag=dag
     )
-    sensor >> start_notify >> review_crawling >> end_notify
+    start_notify >> review_crawling >> end_notify
     
 # DAG 동적 생성
 for b_name, page in brand_info_split.items():

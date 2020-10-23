@@ -322,7 +322,7 @@ count = get_musinsa_category_count()
 for count in range(0, count):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
-        python_callable=get_category_page
+        python_callable=get_category_page,
         dag=dag
     )
     start_notify >> id_crawling>> end_notify
