@@ -6,6 +6,7 @@ import re
 import time
 import csv
 import datetime as dt
+import pymysql
 
 # airflow 
 from airflow import DAG
@@ -16,23 +17,25 @@ import sys
 import pendulum
 import requests
 
-category_info = {
-      '구두' : '005014'
-    , '부츠' : '005011'
-    , '로퍼' : '005015'
-    , '샌들' : '005004'
-    , '슬리퍼' : '005018'
-}
-category_info_split = {
-      '캔버스' : '018002'
-    , '러닝화' : '018003'
-    , '힐' : '005012'
-    , '플랫' : '005017'
-    , '스니커즈' : '018004'
-}
 
+def get_musinsa_category_count():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
 
-def get_shoes_review(category, **kwargs):
+    try:
+        with conn.cursor() as curs:
+            select_count = """
+                SELECT count(*) from musinsa_category;
+            """
+            curs.execute(select_count)
+            count = curs.fetchone()[0]
+
+    finally:
+        conn.close()
+
+    return count
+
+def get_shoes_review(category, prod_ids):
     now = dt.datetime.now()
     prod_id_csv = pd.read_csv('/root/reviews/musinsa_{}_id.csv'.format(category))
     prod_ids = prod_id_csv['musinsa_id']
@@ -93,6 +96,61 @@ def get_shoes_review(category, **kwargs):
             csvWriter.writerow(w)
         f.close()
     driver.close()
+
+
+def get_category_prod_ids():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
+
+    try:
+        with conn.cursor() as curs:
+            try:
+                create_seq = """
+                    CREATE SEQUENCE seq_musinsa_id START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
+            except:
+                pass
+
+            nextval = """
+                SELECT NEXTVAL(seq_musinsa_id);
+            """
+            curs.execute(nextval)
+            next_val = curs.fetchone()[0]
+
+            try:
+                select_category = """
+                    SELECT category
+                      FROM musinsa_category
+                     WHERE idx = %s
+                     ;
+                """
+                curs.execute(select_category, next_val)
+                category = curs.fetchone()[0]
+
+            except:
+                drop_seq = """
+                            DROP SEQUENCE seq_musinsa_id;
+                        """
+                curs.execute(drop_seq)
+
+            select_musinsa_id = """
+                SELECT musinsa_id
+                  FROM musinsa_shoes
+                 WHERE category = %s
+                 ;
+            """
+            curs.execute(select_musinsa_id, category)
+            ids = curs.fetchall()
+
+            prod_ids = []
+            for i in range(0, len(ids)):
+                prod_ids.append(ids[i][0])
+
+    finally:
+        conn.close()
+
+    get_shoes_review(category, prod_ids)
 
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
@@ -160,25 +218,14 @@ sensor = ExternalTaskSensor(
     , queue='qmaria'
     , dag=dag
 )
-# DAG 동적 생성
-for name, page in category_info_split.items():
-    # 크롤링 DAG
-    review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(page),
-        python_callable=get_shoes_review,
-        op_kwargs={'category':name},
-        queue='qmaria',
-        dag=dag
-    )
-    sensor >> start_notify >> review_crawling >> end_notify
+
     
 # DAG 동적 생성
-for name, page in category_info.items():
-    # 크롤링 DAG
+count = get_musinsa_category_count()
+for i in range(0, len(count)):
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(page),
-        python_callable=get_shoes_review,
-        op_kwargs={'category':name},
+        task_id='{0}_review_crawling'.format(count),
+        python_callable=get_category_prod_ids,
         queue='q22',
         dag=dag
     )
