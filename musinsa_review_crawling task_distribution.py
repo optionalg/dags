@@ -143,6 +143,8 @@ def get_category_prod_ids(prod_ids_len=None, category=None, ids=None):
                 ids = curs.fetchall()
 
                 distribute_task(category, ids)
+        finally:
+            conn.close()
     else:
         distribute_task(category, ids)
 
