@@ -25,45 +25,28 @@ import requests
 
 # DB에서 b_name, page 갖고 오기
 
-def get_b_name_page():
+def danawa_brand_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
     try:
         with conn.cursor() as curs:
-            create_seq = """
-                CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
+            select_count = """
+                SELECT count(*) from danawa_brand;
             """
-            curs.execute(create_seq)
-
-            nextval = """
-                SELECT NEXTVAL(seq_danawa_id);
-            """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
-
-            try:
-                select_brand = """
-                    SELECT brand, page
-                      FROM danawa_brand
-                     WHERE idx=%s;
-                """
-                curs.execute(select_brand, next_val)
-                b_name, page = curs.fetchone()
-
-            except:
-                drop_seq = """
-                            DROP SEQUENCE seq_danawa_id;
-                        """
-                curs.execute(drop_seq)
+            curs.execute(select_count)
+            count = curs.fetchone()[0]
 
     finally:
         conn.close()
 
-    return b_name, page
+    return count
+
+
+
 
 # 신발 정보 가져오는 함수
-def get_shoes_info(b_name, page, **kwargs):
+def get_shoes_info(b_name, page):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -207,8 +190,43 @@ def get_shoes_info(b_name, page, **kwargs):
     finally:
         conn.close()
 
+def get_b_name_page():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
 
+    try:
+        with conn.cursor() as curs:
+            create_seq = """
+                CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
+            """
+            curs.execute(create_seq)
 
+            nextval = """
+                SELECT NEXTVAL(seq_danawa_id);
+            """
+            curs.execute(nextval)
+            next_val = curs.fetchone()[0]
+
+            try:
+                select_brand = """
+                    SELECT brand, page
+                      FROM danawa_brand
+                     WHERE idx=%s;
+                """
+                curs.execute(select_brand, next_val)
+                b_name, page = curs.fetchone()
+
+            except:
+                drop_seq = """
+                            DROP SEQUENCE seq_danawa_id;
+                        """
+                curs.execute(drop_seq)
+
+    finally:
+        conn.close()
+
+    get_shoes_info(b_name, page)
+    
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
@@ -267,13 +285,13 @@ end_notify = PythonOperator(
 )
 # DAG 동적 생성
 # 크롤링 DAG
-id_crawling = PythonOperator(
-    task_id='{0}_id_crawling'.format(page),
-    python_callable=get_b_name_page(),
-    op_kwargs={'b_name':b_name
-                ,'page':page},
-    queue='q22',
-    dag=dag
-)
-start_notify >> id_crawling >> end_notify
+count = danawa_brand_count()
+
+for count in range(0, count):
+    id_crawling = PythonOperator(
+        task_id='{0}_id_crawling'.format(count),
+        python_callable=get_b_name_page,
+        dag=dag
+    )
+    start_notify >> id_crawling >> end_notify
 
