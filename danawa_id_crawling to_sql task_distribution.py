@@ -32,7 +32,7 @@ def get_b_name_page():
     try:
         with conn.cursor() as curs:
             create_seq = """
-                CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1 MAXVALUE 102;
+                CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
             """
             curs.execute(create_seq)
 
@@ -42,15 +42,16 @@ def get_b_name_page():
             curs.execute(nextval)
             next_val = curs.fetchone()[0]
 
-            select_brand = """
-                SELECT brand, page
-                  FROM danawa_brand
-                 WHERE idx=%s;
-            """
-            curs.execute(select_brand, next_val)
-            b_name, page = curs.fetchone()
+            try:
+                select_brand = """
+                    SELECT brand, page
+                      FROM danawa_brand
+                     WHERE idx=%s;
+                """
+                curs.execute(select_brand, next_val)
+                b_name, page = curs.fetchone()
 
-            if next_val == 102:
+            except:
                 drop_seq = """
                             DROP SEQUENCE seq_danawa_id;
                         """
