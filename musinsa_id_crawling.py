@@ -68,6 +68,7 @@ def get_shoes_info(category, page, **kwargs):
         # r = requests.get(img_url)
         # file = open("musinsa_img_{}.jpg".format(str(prod_id)), "wb")
         # file.write(r.content)
+
         # file.close()
         prod_name = driver.find_element_by_class_name('product_title')
         prod_name_text = prod_name.text

@@ -144,7 +144,7 @@ def get_category_prod_ids():
             ids = curs.fetchall()
 
     finally:
-        con.close()
+        conn.close()
 
     distribute_task(category, ids)
 
