@@ -158,10 +158,8 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 1, tzinfo=local_tz),
+    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
     'catchup': False,
-    'retries': 2,
-    'retry_delay':timedelta(minutes=1)
 }    
     
 # DAG인스턴스 생성
@@ -173,14 +171,13 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=1)
+    , schedule_interval=timedelta(days=14)
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -188,18 +185,18 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
-    queue='qmaria',
     dag=dag
 )
+"""
 # id 크롤링 종료 감지
 sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_id_crawling'
     , external_task_id='end_notify'
     , mode='reschedule'
-    , queue='qmaria'
     , dag=dag
 )
+"""
 # DAG 동적 생성
 
 # 크롤링 DAG
@@ -211,6 +208,6 @@ for count in range(0, count):
         python_callable=get_b_name_prod_ids,
         dag=dag
     )
-sensor >> start_notify >> review_crawling >> end_notify
+    start_notify >> review_crawling >> end_notify
     
 
