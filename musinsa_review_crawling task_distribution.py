@@ -86,15 +86,14 @@ def get_shoes_review(category, prod_ids):
                     except:
                         pass
                 for q,e,r in zip(prod_rvw_date,prod_cust_buy_size,prod_rvw):
-                    musinsa_rvw_list.append([q.text, prod_id, e.text, size, footwidth, ignition, r.text])
-
-        filename = f'/root/reviews/musinsa_{style}_{category}_reviews.csv'
-        f = open(filename, 'w', encoding='utf-8', newline='')
-        csvWriter = csv.writer(f)
-        csvWriter.writerow(['review_date','musinsa_id','buy_size','sizefeel','footwidthfeel','feeling','review'])
-        for w in musinsa_rvw_list:
-            csvWriter.writerow(w)
-        f.close()
+                    #musinsa_rvw_list.append([q.text, prod_id, e.text, size, footwidth, ignition, r.text])
+                    filename = f'/home/reviews/reviews.txt'
+                    f = open(filename, 'w', encoding='utf-8', newline='')
+                    review_date = q.text
+                    review = r.text
+                    f.write(f'{prod_id} {review_date} {review}\n')
+                    f.close()
+        
     driver.close()
 
 
