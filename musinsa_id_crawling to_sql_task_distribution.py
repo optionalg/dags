@@ -55,7 +55,7 @@ def get_shoes_info(category, page):
     url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=3000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
     driver.get(url)
     time.sleep(10)
-    driver.implicitly_wait(60)
+    driver.implicitly_wait(90)
     prod_id_list = driver.find_elements_by_css_selector('#searchList > li > div.li_inner > div.list_img > a > img')
     for q in prod_id_list:
         raw_prod_id = q.get_attribute("data-original")
@@ -285,8 +285,6 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 1, tzinfo=local_tz),
     'catchup': False,
-    'retries': 2,
-    'retry_delay':timedelta(minutes=1)
 }    
     
 # DAG인스턴스 생성
