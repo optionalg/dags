@@ -185,7 +185,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='musinsa_review_crawling'
+      dag_id='musinsa_review_crawling_from_sql'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
@@ -206,17 +206,7 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'무신사 리뷰 크롤링이 종료되었습니다.'},
-    queue='qmaria',
     dag=dag
-)
-# id 크롤링 종료 감지
-sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='musinsa_id_crawling'
-    , external_task_id='end_notify'
-    , mode='reschedule'
-    , queue='qmaria'
-    , dag=dag
 )
 
     
@@ -226,8 +216,7 @@ for i in range(0, count):
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=get_category_prod_ids,
-        queue='q22',
         dag=dag
     )
-    sensor >> start_notify >> review_crawling >> end_notify
+    start_notify >> review_crawling >> end_notify
     
