@@ -17,7 +17,6 @@ import sys
 import pendulum
 import requests
 
-
 def get_musinsa_category_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
@@ -97,66 +96,66 @@ def get_shoes_review(category, prod_ids):
     driver.close()
 
 
-def get_category_prod_ids():
+def get_category_prod_ids(prod_ids_len=None, category=None, ids=None):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
-    try:
-        with conn.cursor() as curs:
-            try:
-                create_seq = """
-                    CREATE SEQUENCE seq_musinsa_id START WITH 1 INCREMENT BY 1;
+    if prod_ids_len == None or prod_ids_len == 0:
+        try:
+            with conn.cursor() as curs:
+                try:
+                    create_seq = """
+                        CREATE SEQUENCE seq_musinsa_id START WITH 1 INCREMENT BY 1;
+                    """
+                    curs.execute(create_seq)
+                except:
+                    pass
+
+                nextval = """
+                    SELECT NEXTVAL(seq_musinsa_id);
                 """
-                curs.execute(create_seq)
-            except:
-                pass
+                curs.execute(nextval)
+                next_val = curs.fetchone()[0]
 
-            nextval = """
-                SELECT NEXTVAL(seq_musinsa_id);
-            """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
+                try:
+                    select_category = """
+                        SELECT category
+                          FROM musinsa_category
+                         WHERE idx = %s
+                         ;
+                    """
+                    curs.execute(select_category, next_val)
+                    category = curs.fetchone()[0]
 
-            try:
-                select_category = """
-                    SELECT category
-                      FROM musinsa_category
-                     WHERE idx = %s
+                except:
+                    drop_seq = """
+                                DROP SEQUENCE seq_musinsa_id;
+                            """
+                    curs.execute(drop_seq)
+
+                select_musinsa_id = """
+                    SELECT musinsa_id
+                      FROM musinsa_shoes
+                     WHERE category = %s
                      ;
                 """
-                curs.execute(select_category, next_val)
-                category = curs.fetchone()[0]
+                curs.execute(select_musinsa_id, category)
+                ids = curs.fetchall()
 
-            except:
-                drop_seq = """
-                            DROP SEQUENCE seq_musinsa_id;
-                        """
-                curs.execute(drop_seq)
-
-            select_musinsa_id = """
-                SELECT musinsa_id
-                  FROM musinsa_shoes
-                 WHERE category = %s
-                 ;
-            """
-            curs.execute(select_musinsa_id, category)
-            ids = curs.fetchall()
-
-    finally:
-        conn.close()
-
-    distribute_task(category, ids)
+                distribute_task(category, ids)
+    else:
+        distribute_task(category, ids)
 
 
 def distribute_task(category, ids):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
-
     try:
-        with conn.cursor() as curs:
+        with conn.cursor as curs:
             prod_ids_all = []
             for i in range(0, len(ids)):
                 prod_ids_all.append(ids[i][0])
+
             try:
                 create_seq = """
                     CREATE SEQUENCE seq_task_unit INCREMENT BY 500 MINVALUE 0;
@@ -182,11 +181,11 @@ def distribute_task(category, ids):
             curs.execute(select_end_point)
             end_point = curs.fetchone()[0]
 
-            try:
-                prod_ids = prod_ids_all[start_point:end_point]
-            except:
-                prod_ids = prod_ids_all[start_point:]
+            prod_ids = prod_ids_all[start_point:end_point]
 
+            prod_ids_len = len(prod_ids)
+
+            if prod_ids_len == 0:
                 drop_seq = """
                     DROP SEQUENCE seq_task_unit;
                 """
@@ -196,12 +195,12 @@ def distribute_task(category, ids):
                     DROP SEQUENCE seq_task_unit2;
                 """
                 curs.execute(drop_seq2)
-
+            else:
+                get_shoes_review(category, prod_ids)
     finally:
         conn.close()
 
-    get_shoes_review(category, prod_ids)
-
+    return prod_ids_len, category, ids
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs):
@@ -261,10 +260,17 @@ end_notify = PythonOperator(
 
 # DAG 동적 생성
 count = get_musinsa_category_count()
+prod_ids_len = None
+category = None
+ids = None
+
 for i in range(0, count):
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=get_category_prod_ids,
+        op_kwargs={prod_ids_len:prod_ids_len,
+                   category:category,
+                   ids:ids},
         dag=dag
     )
 
