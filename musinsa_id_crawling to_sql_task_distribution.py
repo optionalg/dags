@@ -71,18 +71,18 @@ def get_shoes_info(category, page):
         driver.implicitly_wait(10)
 
         # 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-        prod_main_img = driver.find_element_by_css_selector('#bigimg')
-        img_url = prod_main_img.get_attribute('src')
-        r = requests.get(img_url)
-        file = open("musinsa_img_{}.jpg".format(str(prod_id_one)), "wb")
-        file.write(r.content)
-        file.close()
-
-        buffer = BytesIO()
-        im = Image.open("musinsa_img_{}.jpg".format(prod_id_one))
-
-        im.save(buffer, format='jpeg')
-        img_str = base64.b64encode(buffer.getvalue())
+        # prod_main_img = driver.find_element_by_css_selector('#bigimg')
+        # img_url = prod_main_img.get_attribute('src')
+        # r = requests.get(img_url)
+        # file = open("musinsa_img_{}.jpg".format(str(prod_id_one)), "wb")
+        # file.write(r.content)
+        # file.close()
+        #
+        # buffer = BytesIO()
+        # im = Image.open("musinsa_img_{}.jpg".format(prod_id_one))
+        #
+        # im.save(buffer, format='jpeg')
+        # img_str = base64.b64encode(buffer.getvalue())
 
         prod_name = driver.find_element_by_class_name('product_title')
         prod_name_text = prod_name.text
@@ -163,11 +163,11 @@ def get_shoes_info(category, page):
             modelname = prod_name_text # 모델명이 품번인 경우
 
             
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text, img_str])
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
 
     musinsa_df = pd.DataFrame(
         data=prod_info
-        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img']
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
     )
 
     # 무신사 데이터 편집
