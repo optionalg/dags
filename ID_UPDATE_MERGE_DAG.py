@@ -78,7 +78,7 @@ danawa_id_crawling_dag_sensor = ExternalTaskSensor(
 # ID 크롤링 종료 알림
 id_end_notify = PythonOperator(
     task_id='start_notify',
-    python_callable=notify,
+    python_callable=id_merge_update,
     op_kwargs={'context':'ID 크롤링이 종료되었습니다.'},
     dag=dag
 )

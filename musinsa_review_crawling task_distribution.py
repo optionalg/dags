@@ -88,13 +88,13 @@ def get_shoes_review(prod_ids):
                     review = review.replace('\n','')
                     if re.search('보', si) : si = 0
                     elif re.search('커', si) : si = 1
-                    else si = -1 
+                    else : si = -1 
                     if re.search('보', fo) : fo = 0
                     elif re.search('넓', fo) : fo = 1
-                    else fo = -1 
+                    else : fo = -1 
                     if re.search('적', ig) : ig = 0
                     elif re.search('편', ig) : ig = 1
-                    else ig = -1 
+                    else : ig = -1 
                     
                     filename = f'/home/reviews/musinsa.txt'
                     f = open(filename, 'a', encoding='utf-8', newline='')

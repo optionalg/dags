@@ -98,7 +98,7 @@ review_start_notify = PythonOperator(
     op_kwargs={'context':'리뷰 크롤링을 시작하였습니다.'},
     dag=dag
 )
-start_notify
+review_start_notify
 
 # 무신사 실행 감지
 musinsa_review_crawling_sensor = ExternalTaskSensor(
