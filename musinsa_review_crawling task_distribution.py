@@ -123,7 +123,7 @@ def distribute_task(ids, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
-        with conn.cursor as curs:
+        with conn.cursor() as curs:
             prod_ids_all = []
             for i in range(0, len(ids)):
                 prod_ids_all.append(ids[i][0])
