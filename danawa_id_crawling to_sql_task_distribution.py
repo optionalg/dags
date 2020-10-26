@@ -11,8 +11,7 @@ import datetime as dt
 import pymysql
 import glob, os
 from sqlalchemy import create_engine
-pymysql.install_as_MySQLdb()
-import MySQLdb
+
 
 
 # airflow 
@@ -105,7 +104,7 @@ def get_shoes_info(b_name, page):
     driver.close()
 
     # 저장된 파일 편
-    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv')
+    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv', index_col=0, thousands=',')
 
     danawa['shono'] = None
 
@@ -120,7 +119,7 @@ def get_shoes_info(b_name, page):
     musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
 
     danawa['heelsize'] = None
-    danawa['price'] = None
+    danawa['price_d'] = None
 
     for i in danawa.index:
         splitmo = danawa['modelname'][i].split(' ') # 에러
@@ -140,15 +139,25 @@ def get_shoes_info(b_name, page):
         for n in splitinfo:
             if ' 총굽: ' in n:
                 danawa['heelsize'][i] = n.strip()[3:]
-            #   가격추출
-            if ' 출시가: ' in n:
-                danawa['price'][i] = n.strip()[5:-1]
+        #   가격추출
+        danawa['price_d'][i] = ''.join(danawa['prod_cost'][i][:-1].split(','))
 
         #   카테고리 무신사기준으로 변경
         for n in range(0, len(danacate)):
             for m in range(0, len(danacate[n])):
                 if danacate[n][m] in danawa['prod_info'][i]:
                     danawa['category'][i] = musincate[n]
+
+        del danawa['prod_info']
+
+        if b_name == "MLB":
+            danawa.loc[danawa["brand"] == "MLB", "brand"] = "엠엘비"
+        elif b_name == 'BSQT':
+            danawa.loc[danawa["brand"] == "BSQT", "brand"] = "비에스큐티"
+        elif b_name == "SNRD":
+            danawa.loc[danawa["brand"] == "SNRD", "brand"] = "에스엔알디"
+
+        danawa.drop_duplicates(inplace=True)
 
         #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
         if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] not in shosex):
@@ -157,34 +166,12 @@ def get_shoes_info(b_name, page):
 
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
 
-    danapath = f'/root/reviews/danawa_*_id.csv'
-    dana_file_list = glob.glob(os.path.join(danapath))
-
-    dana_df_list = []
-    for file in dana_file_list:
-        tmp_df = pd.read_csv(file, index_col=0, thousands=',')
-        dana_df_list.append(tmp_df)
-
-    danawa_df = pd.concat(dana_df_list, axis=0, ignore_index=True)
-    del danawa_df['prod_info']
-
-    danawa_df.rename(columns={
-        'price': 'price_d'
-    }
-        , inplace=True
-    )
-
-    if b_name == "MLB":
-        danawa_df.loc[danawa_df["brand"] == "MLB","brand"] = "엠엘비"
-
-    danawa_df.drop_duplicates(inplace=True)
-
 
     # 마리아디비로 전송
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
-        danawa_df.to_sql(name='danawa_shoes', con=engine, if_exists='replace', index=False)
+        danawa.to_sql(name='danawa_shoes', con=engine, if_exists='append', index=False)
     finally:
         conn.close()
 
@@ -196,14 +183,14 @@ def get_b_name_page():
         with conn.cursor() as curs:
             try:
                 create_seq = """
-                    CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
+                    CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
                 """
                 curs.execute(create_seq)
             except:
                 pass
 
             nextval = """
-                SELECT NEXTVAL(seq_danawa_id);
+                SELECT NEXTVAL(seq_danawa_brand);
             """
             curs.execute(nextval)
             next_val = curs.fetchone()[0]
@@ -217,16 +204,31 @@ def get_b_name_page():
                 curs.execute(select_brand, next_val)
                 b_name, page = curs.fetchone()
 
+                get_shoes_info(b_name, page)
+
             except:
                 drop_seq = """
-                            DROP SEQUENCE seq_danawa_id;
+                            DROP SEQUENCE seq_danawa_brand;
                         """
                 curs.execute(drop_seq)
 
     finally:
         conn.close()
 
-    get_shoes_info(b_name, page)
+
+def truncate():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
+
+    try:
+        with conn.cursor() as curs:
+            truncate_table = """
+                truncate table danawa_shoes;
+            """
+            curs.execute(truncate_table)
+
+    finally:
+        conn.close()
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
@@ -283,6 +285,13 @@ end_notify = PythonOperator(
     dag=dag
 )
 
+# 테이블 초기화 DAG
+truncate = PythonOperator(
+    task_id='truncate',
+    python_callable=truncate,
+    queue='qmaria',
+    dag=dag,
+)
 
 # DAG 동적 생성
 # 크롤링 DAG
@@ -294,5 +303,5 @@ for count in range(0, count):
         python_callable=get_b_name_page,
         dag=dag
     )
-    start_notify >> id_crawling >> end_notify
+    start_notify >> truncate >> id_crawling >> end_notify
 
