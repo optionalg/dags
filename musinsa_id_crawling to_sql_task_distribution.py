@@ -7,10 +7,10 @@ import time
 import csv
 import datetime as dt
 import pymysql
-import glob, os
 from sqlalchemy import create_engine
-pymysql.install_as_MySQLdb()
-import MySQLdb
+from PIL import Image
+import base64
+from io import BytesIO
 
 # airflow 
 from airflow import DAG
@@ -40,7 +40,7 @@ def get_musinsa_category_count():
 
 # 무신사 모델 정보 뽑기
 def get_shoes_info(category, page):
-    
+
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -49,7 +49,7 @@ def get_shoes_info(category, page):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
-    
+
     # 모델 musinsa_id 추출 
     prod_id = []
     url = 'https://store.musinsa.com/app/items/lists/'+str(page)+'/?category=&d_cat_cd=005&u_cat_cd=&brand=&sort=pop&sub_sort=&display_cnt=3000&page=1&page_kind=category&list_kind=small&free_dlv=&ex_soldout=N&sale_goods=&exclusive_yn=&price=&color=&a_cat_cd=&size=&tag=&popup=&brand_favorite_yn=&goods_favorite_yn=&blf_yn=&campaign_yn=&bwith_yn=&price1=&price2=&chk_soldout=on'
@@ -61,7 +61,7 @@ def get_shoes_info(category, page):
         raw_prod_id = q.get_attribute("data-original")
         prod_id_cook = raw_prod_id.split('/')[6]
         prod_id.append(prod_id_cook)
-    
+
     # 모델 상세 정보 추출
     prod_info = []
     for prod_id_one in prod_id:
@@ -69,13 +69,21 @@ def get_shoes_info(category, page):
         driver.get(url2)
         time.sleep(1)
         driver.implicitly_wait(10)
+
         # 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-        # prod_main_img = driver.find_element_by_css_selector('#bigimg')
-        # img_url = prod_main_img.get_attribute('src')
-        # r = requests.get(img_url)
-        # file = open("musinsa_img_{}.jpg".format(str(prod_id)), "wb")
-        # file.write(r.content)
-        # file.close()
+        prod_main_img = driver.find_element_by_css_selector('#bigimg')
+        img_url = prod_main_img.get_attribute('src')
+        r = requests.get(img_url)
+        file = open("musinsa_img_{}.jpg".format(str(prod_id_one)), "wb")
+        file.write(r.content)
+        file.close()
+
+        buffer = BytesIO()
+        im = Image.open("musinsa_img_{}.jpg".format(prod_id_one))
+
+        im.save(buffer, format='jpeg')
+        img_str = base64.b64encode(buffer.getvalue())
+
         prod_name = driver.find_element_by_class_name('product_title')
         prod_name_text = prod_name.text
         try: # 영어 이름이 있는 경우 제거
@@ -83,8 +91,8 @@ def get_shoes_info(category, page):
             prod_name_eng_text = prod_name_eng.text
             prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
         except: # 영어 이름이 없는 경우 pass
-            pass 
-            
+            pass
+
         # 브랜드, id
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
         prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
@@ -96,7 +104,7 @@ def get_shoes_info(category, page):
             name_id = id_and_brand_text.split('/')[1]  # 모델품번
         except :
             name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
-        
+
         # 사이즈
         try:
             size = driver.find_element_by_class_name('option1')
@@ -117,11 +125,11 @@ def get_shoes_info(category, page):
             join_size_text = '-'.join(size_text)  # 사이즈.
         except:
             join_size_text = size
-          
+
         # 성별
         gender = driver.find_element_by_class_name('txt_gender')
         gender_text = gender.text # 성별
-        
+
         # 가격
         try:
             price = driver.find_element_by_css_selector('#goods_price > del')
@@ -129,7 +137,7 @@ def get_shoes_info(category, page):
             price = driver.find_element_by_css_selector('#goods_price')
         price_text = price.text # 일반가격
 
-                    
+
         # 모델 이름에서 품번, 광고성 문구, 색상 등 기타정보 제거
         modelname = ''
         if len(prod_name_text.split()) != 1: # 모델명이 품번이 아닌 경우
@@ -148,43 +156,21 @@ def get_shoes_info(category, page):
                 modelname = ''.join(prod_name_text.split(')')[1:])
             else: # 광고성 괄호가 없는 경우
                 modelname = prod_name_text
-                
+
             modelname = modelname.replace(name_id,'').replace('/','') # 품번 제거
             modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
         else:
             modelname = prod_name_text # 모델명이 품번인 경우
-            
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
 
-    filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['category', 'brand', 'prod_name', 'modelname', 'gender' ,'size', 'musinsa_id','price'])
-    for i in prod_info:
-        csvWriter.writerow(i)
-    f.close()
-    driver.close()
+            
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text, img_str])
+
+    musinsa_df = pd.DataFrame(
+        data=prod_info
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img']
+    )
 
     # 무신사 데이터 편집
-
-    musinpath = f'/root/reviews/musinsa_*_id.csv'
-    musin_file_list = glob.glob(os.path.join(musinpath))
-
-    musin_df_list = []
-    for file in musin_file_list:
-        tmp_df = pd.read_csv(file, index_col=0, thousands=',')
-        tmp_df['category'] = file.split('_')[1].strip()
-        musin_df_list.append(tmp_df)
-
-    musinsa_df = pd.concat(musin_df_list, axis=0, ignore_index=True)
-
-    musinsa_df.rename(columns={
-        'prod_name': 'shono'
-        , 'gender': 'shosex'
-        , 'price': 'price_m'
-    }
-        , inplace=True
-    )
 
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '남 여 아동'].index, axis=0, inplace=True)
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '아동'].index, axis=0, inplace=True)
@@ -199,6 +185,7 @@ def get_shoes_info(category, page):
     musinsa_df['maxsize'] = None
     musinsa_df['sizeunit'] = None
 
+
     for i in musinsa_df.index:
         try:
             musinsa_df['minsize'][i] = int(musinsa_df['size'].str.split('-')[i][0])
@@ -210,12 +197,15 @@ def get_shoes_info(category, page):
 
     del musinsa_df['size']
 
+    musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
+
+
     # 마리아디비로 전송
 
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
-        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='replace', index=False)
+        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)
     finally:
         conn.close()
 
@@ -234,7 +224,7 @@ def get_category_page():
                 curs.execute(create_seq)
             except:
                 pass
-            
+
             nextval = """
                 SELECT NEXTVAL(seq_musinsa_category);
             """
@@ -249,6 +239,9 @@ def get_category_page():
                 """
                 curs.execute(select_brand, next_val)
                 category, page = curs.fetchone()
+
+                get_shoes_info(category, page)
+
             except:
                 drop_seq = """
                     DROP SEQUENCE seq_musinsa_category;
@@ -258,10 +251,24 @@ def get_category_page():
     finally:
         conn.close()
 
-    get_shoes_info(category, page)
-    
+
+def truncate():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
+
+    try:
+        with conn.cursor() as curs:
+            truncate_table = """
+                truncate table musinsa_shoes;
+            """
+            curs.execute(truncate_table)
+
+    finally:
+        conn.close()
+
+
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, **kwargs): 
+def notify(context, **kwargs):
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
 
@@ -285,8 +292,8 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
     'catchup': False,
-}    
-    
+}
+
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
@@ -315,16 +322,23 @@ end_notify = PythonOperator(
     dag=dag
 )
 
-    
-# DAG 동적 생성
+# 테이블 초기화 DAG
+truncate = PythonOperator(
+    task_id = 'truncate',
+    python_callable = truncate,
+    queue = 'qmaria',
+    dag = dag,
+)
 
+# DAG 동적 생성
 # 크롤링 DAG
 count = get_musinsa_category_count()
+
 for count in range(0, count):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
         python_callable=get_category_page,
         dag=dag
     )
-    start_notify >> id_crawling>> end_notify
-    
+    start_notify >> truncate >> id_crawling>> end_notify
+
