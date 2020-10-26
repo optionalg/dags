@@ -199,7 +199,7 @@ dag = DAG(
 start_notify_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='line_notify_review_crawling'
-    , external_task_id='start_notify'
+    , external_task_id='review_start_notify'
     , mode='reschedule'
     , dag=dag
 )
