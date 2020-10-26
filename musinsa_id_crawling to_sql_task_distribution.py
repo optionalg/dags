@@ -9,8 +9,9 @@ import datetime as dt
 import pymysql
 import glob, os
 from sqlalchemy import create_engine
-pymysql.install_as_MySQLdb()
-import MySQLdb
+from PIL import Image
+import base64
+from io import BytesIO
 
 # airflow 
 from airflow import DAG
@@ -69,13 +70,21 @@ def get_shoes_info(category, page):
         driver.get(url2)
         time.sleep(1)
         driver.implicitly_wait(10)
+
         # 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-        # prod_main_img = driver.find_element_by_css_selector('#bigimg')
-        # img_url = prod_main_img.get_attribute('src')
-        # r = requests.get(img_url)
-        # file = open("musinsa_img_{}.jpg".format(str(prod_id)), "wb")
-        # file.write(r.content)
-        # file.close()
+        prod_main_img = driver.find_element_by_css_selector('#bigimg')
+        img_url = prod_main_img.get_attribute('src')
+        r = requests.get(img_url)
+        file = open("musinsa_img_{}.jpg".format(str(prod_id_one)), "wb")
+        file.write(r.content)
+        file.close()
+
+        buffer = BytesIO()
+        im = Image.open("musinsa_img_{}.jpg".format(prod_id_one))
+
+        im.save(buffer, format='jpeg')
+        img_str = base64.b64encode(buffer.getvalue())
+
         prod_name = driver.find_element_by_class_name('product_title')
         prod_name_text = prod_name.text
         try: # 영어 이름이 있는 경우 제거
@@ -154,36 +163,11 @@ def get_shoes_info(category, page):
         else:
             modelname = prod_name_text # 모델명이 품번인 경우
             
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text, img_str])
 
-    filename = '/root/reviews/musinsa_{}_id.csv'.format(category)
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['category', 'brand', 'prod_name', 'modelname', 'gender' ,'size', 'musinsa_id','price'])
-    for i in prod_info:
-        csvWriter.writerow(i)
-    f.close()
-    driver.close()
-
-    # 무신사 데이터 편집
-
-    musinpath = f'/root/reviews/musinsa_*_id.csv'
-    musin_file_list = glob.glob(os.path.join(musinpath))
-
-    musin_df_list = []
-    for file in musin_file_list:
-        tmp_df = pd.read_csv(file, index_col=0, thousands=',')
-        tmp_df['category'] = file.split('_')[1].strip()
-        musin_df_list.append(tmp_df)
-
-    musinsa_df = pd.concat(musin_df_list, axis=0, ignore_index=True)
-
-    musinsa_df.rename(columns={
-        'prod_name': 'shono'
-        , 'gender': 'shosex'
-        , 'price': 'price_m'
-    }
-        , inplace=True
+    musinsa_df = pd.DataFrame(
+        data=prod_info
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img']
     )
 
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '남 여 아동'].index, axis=0, inplace=True)
@@ -210,12 +194,15 @@ def get_shoes_info(category, page):
 
     del musinsa_df['size']
 
+    musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
+
+
     # 마리아디비로 전송
 
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
-        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='replace', index=False)
+        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)
     finally:
         conn.close()
 
@@ -249,6 +236,8 @@ def get_category_page():
                 """
                 curs.execute(select_brand, next_val)
                 category, page = curs.fetchone()
+
+                get_shoes_info(category, page)
             except:
                 drop_seq = """
                     DROP SEQUENCE seq_musinsa_category;
@@ -258,7 +247,7 @@ def get_category_page():
     finally:
         conn.close()
 
-    get_shoes_info(category, page)
+
     
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs): 
