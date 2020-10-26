@@ -210,7 +210,7 @@ ids = get_category_prod_ids()
 
 for i in range(0, count):
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(count),
+        task_id='{0}_review_crawling'.format(i),
         python_callable=distribute_task,
         op_kwargs={'ids':ids},
         dag=dag
