@@ -60,8 +60,8 @@ id_start_notify = PythonOperator(
 # merge 실행 감지
 id_update_merge_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
-    , external_dag_id='id_update_merge'
-    , external_task_id='id_update'
+    , external_dag_id='id_merge_update'
+    , external_task_id='id_merge_update'
     , mode='reschedule'
     , dag=dag
 )

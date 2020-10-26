@@ -50,7 +50,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='line_notify_id_crawling'
+      dag_id='id_merge_update'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
@@ -59,31 +59,28 @@ dag = DAG(
     , schedule_interval=timedelta(minutes=5)
 )
 
+id_merge_update = PythonOperator(
+    task_id = 'id_merge_update',
+    python_callable = id_merge_update,
+    dag = dag,
+)
 # id 크롤링 실행 감지
 musinsa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='musinsa_id_crawling'
-    , external_task_id='end_notify'
+    , external_task_id='drop_seq'
     , mode='reschedule'
     , dag=dag
 )
 danawa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_id_crawling'
-    , external_task_id='end_notify'
+    , external_task_id='drop_seq'
     , mode='reschedule'
     , dag=dag
 )
 
-# ID 크롤링 종료 알림
-id_end_notify = PythonOperator(
-    task_id='start_notify',
-    python_callable=id_merge_update,
-    op_kwargs={'context':'ID 크롤링이 종료되었습니다.'},
-    dag=dag
-)
-
-
+[musinsa_id_crawling_dag_sensor, danawa_id_crawling_dag_sensor] >> id_merge_update
 
 
 

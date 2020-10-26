@@ -17,6 +17,7 @@ from sqlalchemy import create_engine
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
