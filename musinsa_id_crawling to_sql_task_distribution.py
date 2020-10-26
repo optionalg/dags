@@ -161,7 +161,7 @@ def get_shoes_info(category, page):
             modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
         else:
             modelname = prod_name_text # 모델명이 품번인 경우
-<<<<<<< Updated upstream
+
             
         prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text, img_str])
 
@@ -169,20 +169,8 @@ def get_shoes_info(category, page):
         data=prod_info
         , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img']
     )
-=======
-
-
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text, img_str])
-
-    musinsa_df = pd.DataFrame(
-            data=prod_info
-            , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img']
-    )
-
 
     # 무신사 데이터 편집
-
->>>>>>> Stashed changes
 
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '남 여 아동'].index, axis=0, inplace=True)
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '아동'].index, axis=0, inplace=True)
@@ -253,10 +241,7 @@ def get_category_page():
                 category, page = curs.fetchone()
 
                 get_shoes_info(category, page)
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
             except:
                 drop_seq = """
                     DROP SEQUENCE seq_musinsa_category;
@@ -266,10 +251,6 @@ def get_category_page():
     finally:
         conn.close()
 
-
-<<<<<<< Updated upstream
-    
-=======
 
 def truncate():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
@@ -286,8 +267,6 @@ def truncate():
         conn.close()
 
 
-
->>>>>>> Stashed changes
 # 입력받은 context를 라인으로 메시지 보내는 함수
 def notify(context, **kwargs):
     TARGET_URL = 'https://notify-api.line.me/api/notify'
