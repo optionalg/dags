@@ -43,7 +43,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(2020, 11, 1, tzinfo=local_tz),
     'catchup': False,
 }    
 
@@ -63,14 +63,14 @@ dag = DAG(
 musinsa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='musinsa_id_crawling'
-    , external_task_id='id_update'
+    , external_task_id='end_notify'
     , mode='reschedule'
     , dag=dag
 )
 danawa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_id_crawling'
-    , external_task_id='id_update'
+    , external_task_id='end_notify'
     , mode='reschedule'
     , dag=dag
 )

@@ -105,7 +105,6 @@ def get_shoes_review(prod_ids):
 def get_category_prod_ids():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
-
     try:
         with conn.cursor() as curs:
             select_musinsa_id = """
@@ -114,8 +113,6 @@ def get_category_prod_ids():
             """
             curs.execute(select_musinsa_id)
             ids = curs.fetchall()
-
-            distribute_task(ids)
     finally:
         conn.close()
         
