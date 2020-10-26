@@ -47,13 +47,10 @@ def get_shoes_review(b_name, prod_ids):
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 
-    danawa_reviews = []
+    #danawa_reviews = []
 
-    #progress = 0
-    #progress_check = 0
 
     for prod_id in prod_ids:
-        #img_url_list = []
         page = 0
         while True:
             page = page + 1
@@ -71,15 +68,13 @@ def get_shoes_review(b_name, prod_ids):
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                danawa_reviews.append([prod_id,q.text,w.text])
-
-    filename ='/root/reviews/danawa_{}_reviews.csv'.format(b_name)
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['danawa_id','review_date','reviews'])
-    for i in danawa_reviews:
-        csvWriter.writerow(i)
-    f.close()
+                #danawa_reviews.append([prod_id,q.text,w.text])
+                filename ='/home/reviews/reviews.txt'
+                f = open(filename, 'w', encoding='utf-8', newline='')
+                review_date = q.text
+                review = w.text
+                f.write(f'{prod_id} {review_date} {review}\n')
+                f.close()
     driver.close()
 
 def get_b_name_prod_ids():
