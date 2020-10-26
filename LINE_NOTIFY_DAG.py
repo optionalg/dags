@@ -30,7 +30,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(2020, 10, 30, tzinfo=local_tz),
     'catchup': False,
 }    
 
@@ -51,7 +51,7 @@ dag = DAG(
 )
 # ID 크롤링 시작 알림
 id_start_notify = PythonOperator(
-    task_id='start_notify',
+    task_id='id_start_notify',
     python_callable=notify,
     op_kwargs={'context':'ID 크롤링을 시작하였습니다.'},
     dag=dag
@@ -67,7 +67,7 @@ id_update_merge_dag_sensor = ExternalTaskSensor(
 )
 # ID 크롤링 종료 알림
 id_end_notify = PythonOperator(
-    task_id='start_notify',
+    task_id='id_end_notify',
     python_callable=notify,
     op_kwargs={'context':'ID 크롤링이 종료되었습니다.'},
     dag=dag
@@ -91,9 +91,9 @@ dag = DAG(
     # 실행 주기
     , schedule_interval=timedelta(days=1)
 )
-# ID 크롤링 시작 알림
+# 리뷰 크롤링 시작 알림
 review_start_notify = PythonOperator(
-    task_id='start_notify',
+    task_id='review_start_notify',
     python_callable=notify,
     op_kwargs={'context':'리뷰 크롤링을 시작하였습니다.'},
     dag=dag
@@ -116,9 +116,9 @@ danawa_review_crawling_sensor = ExternalTaskSensor(
     , mode='reschedule'
     , dag=dag
 )
-# ID 크롤링 종료 알림
+# 리뷰 크롤링 종료 알림
 review_end_notify = PythonOperator(
-    task_id='start_notify',
+    task_id='review_end_notify',
     python_callable=notify,
     op_kwargs={'context':'리뷰 크롤링이 종료되었습니다.'},
     dag=dag
