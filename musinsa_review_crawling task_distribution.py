@@ -257,6 +257,16 @@ end_notify = PythonOperator(
     dag=dag
 )
 
+"""
+# id 크롤링 종료 감지
+sensor = ExternalTaskSensor(
+      task_id='external_sensor'
+    , external_dag_id='danawa_id_crawling'
+    , external_task_id='end_notify'
+    , mode='reschedule'
+    , dag=dag
+)
+"""
 
 # DAG 동적 생성
 count = get_musinsa_category_count()
