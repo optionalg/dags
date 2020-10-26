@@ -119,7 +119,7 @@ def get_category_prod_ids():
     return ids
 
 
-def distribute_task(ids):
+def distribute_task(ids, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
