@@ -57,7 +57,7 @@ def get_shoes_review(prod_ids):
                 driver.implicitly_wait(10)
                 prod_rvw_date = driver.find_elements_by_class_name('date')
                 #prod_name = driver.find_elements_by_class_name('list_info.p_name')
-                prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
+                #prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
                 
@@ -81,9 +81,12 @@ def get_shoes_review(prod_ids):
                     except:
                         pass
                         
-                for q,e,r,si,fo,ig in zip(prod_rvw_date,prod_cust_buy_size,prod_rvw,size,footwidth,ignition):
+                for q,r,si,fo,ig in zip(prod_rvw_date,prod_rvw,size,footwidth,ignition):
                     review_date = q.text
-                    buy_size = e.text
+                    #buy_size = e.text
+                    #buy_size = str(re.findall("2\d[0|5]",buy_size)[0])
+                    #if buy_size == "":
+                    #    buy_size = 0
                     review = r.text
                     review = review.replace('\n','')
                     if re.search('보', si) : si = 0
@@ -98,7 +101,7 @@ def get_shoes_review(prod_ids):
                     
                     filename = f'/home/reviews/musinsa.txt'
                     f = open(filename, 'a', encoding='utf-8', newline='')
-                    f.write(f'{prod_id} {review_date[:10]} {buy_size[1:4]} {si} {fo} {ig} {review}\n')
+                    f.write(f'{prod_id} {review_date[:10]} {si} {fo} {ig} {review}\n')
                     f.close()
     driver.close()
 
