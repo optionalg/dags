@@ -17,6 +17,8 @@ import sys
 import pendulum
 import requests
 
+#--------------------------------실행 횟수 설정----------------------------------#
+
 def get_musinsa_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
@@ -33,6 +35,8 @@ def get_musinsa_count():
         conn.close()
     count = int(count / 500) + 1
     return count
+    
+#--------------------------------크롤링 코드----------------------------------#
 
 def get_shoes_review(prod_ids):
 
@@ -48,6 +52,7 @@ def get_shoes_review(prod_ids):
 
     for style in style_list:
         for prod_id in prod_ids:
+            musinsa_reviews = []
             page_num = 0
             while True:
                 page_num = page_num + 1
@@ -80,7 +85,6 @@ def get_shoes_review(prod_ids):
                         ignition.append(test[4])
                     except:
                         pass
-                        
                 for q,r,si,fo,ig in zip(prod_rvw_date,prod_rvw,size,footwidth,ignition):
                     review_date = q.text
                     #buy_size = e.text
@@ -99,10 +103,20 @@ def get_shoes_review(prod_ids):
                     elif re.search('편', ig) : ig = 1
                     else : ig = -1 
                     
-                    filename = f'/home/reviews/musinsa.txt'
+                    filename = '/home/reviews/musinsa.txt'
                     f = open(filename, 'a', encoding='utf-8', newline='')
                     f.write(f'{prod_id} {review_date[:10]} {si} {fo} {ig} {review}\n')
                     f.close()
+                    
+                    # 확인 및 백업을 위해 로컬에 csv파일로 저장
+                    musinsa_reviews.append(prod_id, review_date[:10], si, fo, ig, review)
+            csvwriter = csv.writer(f)
+            filename = f'/root/reviews/musinsa_{prod_id}_{style}.csv'
+            f = open(filename, 'w', encoding='utf-8', newline='')
+            csvwriter.writerow(['musinsa_id','review_date','size','foot','feel','review'])
+            for i in musinsa_reviews:
+                csvwriter.writerow(i)
+            f.close()
     driver.close()
 
 def get_category_prod_ids():
@@ -156,7 +170,10 @@ def distribute_task(ids, **kwargs):
             curs.execute(select_end_point)
             end_point = curs.fetchone()[0]
 
-            prod_ids = prod_ids_all[start_point:end_point]
+            try:
+                prod_ids = ids[start_point:end_point]
+            except:
+                prod_ids = ids[start_point:]
 
             prod_ids_len = len(prod_ids)
 
@@ -174,6 +191,8 @@ def distribute_task(ids, **kwargs):
                 get_shoes_review(prod_ids)
     finally:
         conn.close()
+
+#--------------------------------에어 플로우 코드----------------------------------#
 
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')

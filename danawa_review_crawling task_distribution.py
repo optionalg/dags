@@ -19,6 +19,8 @@ import sys
 import pendulum
 import requests
 
+#--------------------------------실행 횟수 설정----------------------------------#
+
 def get_danawa_brand_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
@@ -36,6 +38,7 @@ def get_danawa_brand_count():
 
     return count
 
+#--------------------------------크롤링 코드----------------------------------#
 
 def get_shoes_review(b_name, prod_ids):
 
@@ -47,10 +50,8 @@ def get_shoes_review(b_name, prod_ids):
     options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36')
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 
-    #danawa_reviews = []
-
-
     for prod_id in prod_ids:
+        danawa_reviews = []
         page = 0
         while True:
             page = page + 1
@@ -68,13 +69,21 @@ def get_shoes_review(b_name, prod_ids):
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                #danawa_reviews.append([prod_id,q.text,w.text])
-                filename ='/home/reviews/reviews.txt'
-                f = open(filename, 'w', encoding='utf-8', newline='')
+                filename ='/home/reviews/danawa.txt'
+                f = open(filename, 'a', encoding='utf-8', newline='')
                 review_date = q.text
                 review = w.text
                 f.write(f'{prod_id} {review_date} {review}\n')
                 f.close()
+                danawa_reviews.append([prod_id,review_date,review])
+        # 확인 및 백업을 위해 로컬에 csv파일로 저장
+        csvwriter = csv.writer(f)
+        filename = f'/root/reviews/danawa_{prod_id}.csv'
+        f = open(filename, 'w', encoding='utf-8', newline='')
+        csvwriter.writerow(['danawa_id','review_date','review'])
+        for i in danawa_reviews:
+            csvwriter.writerow(i)
+        f.close()
     driver.close()
 
 def get_b_name_prod_ids():
@@ -128,23 +137,7 @@ def get_b_name_prod_ids():
 
     get_shoes_review(b_name, prod_ids)
 
-
-
-# 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, **kwargs): 
-    TARGET_URL = 'https://notify-api.line.me/api/notify'
-    TOKEN = 'sw0dTqnM0kEiJETNz2aukiTjhzsrIQlmdR0gdbDeSK3'
-
-    # 요청합니다.
-    requests.post(
-        TARGET_URL
-        , headers={
-            'Authorization' : 'Bearer ' + TOKEN
-        }
-        , data={
-            'message' : context
-        }
-    )
+#--------------------------------에어 플로우 코드----------------------------------#
 
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -166,35 +159,19 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(days=14)
+    , schedule_interval=timedelta(minutes=5)
 )
-# 크롤링 시작 알림
-start_notify = PythonOperator(
-    task_id='start_notify',
-    python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링을 시작하였습니다.'},
-    dag=dag
-)
-# 크롤링 종료 알림
-end_notify = PythonOperator(
-    task_id='end_notify',
-    python_callable=notify,
-    op_kwargs={'context':'다나와 리뷰 크롤링이 종료되었습니다.'},
-    dag=dag
-)
-"""
+
 # id 크롤링 종료 감지
-sensor = ExternalTaskSensor(
+start_notify_sensor = ExternalTaskSensor(
       task_id='external_sensor'
-    , external_dag_id='danawa_id_crawling'
-    , external_task_id='end_notify'
+    , external_dag_id='line_notify_review_crawling'
+    , external_task_id='review_start_notify'
     , mode='reschedule'
     , dag=dag
 )
-"""
-# DAG 동적 생성
 
-# 크롤링 DAG
+# DAG 동적 생성
 count = get_danawa_brand_count()
 
 for count in range(0, count):
@@ -203,6 +180,6 @@ for count in range(0, count):
         python_callable=get_b_name_prod_ids,
         dag=dag
     )
-    start_notify >> review_crawling >> end_notify
+    start_notify_sensor >> review_crawling
     
-
+    
