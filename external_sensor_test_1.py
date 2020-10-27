@@ -52,7 +52,6 @@ start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'1번 시작'},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 코드 동작
@@ -60,7 +59,6 @@ crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=notify,
     op_kwargs={'context':'1번 크롤링'},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -68,7 +66,6 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'1번 종료'},
-    queue='qmaria',
     dag=dag
 )
 

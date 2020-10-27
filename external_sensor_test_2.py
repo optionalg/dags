@@ -45,14 +45,13 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval='* * * * *'
+    , schedule_interval='@hourly'
 )
 # 크롤링 시작 알림
 start_notify = PythonOperator(
     task_id='start_notify',
     python_callable=notify,
     op_kwargs={'context':'2번 시작 '},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 코드 동작
@@ -60,7 +59,6 @@ crawling_code = PythonOperator(
     task_id='review_crawling',
     python_callable=notify,
     op_kwargs={'context':'2번 크롤링'},
-    queue='qmaria',
     dag=dag
 )
 # 크롤링 종료 알림
@@ -68,7 +66,6 @@ end_notify = PythonOperator(
     task_id='end_notify',
     python_callable=notify,
     op_kwargs={'context':'2번 종료'},
-    queue='qmaria',
     dag=dag
 )
 
@@ -78,8 +75,7 @@ sensor = ExternalTaskSensor(
     , external_dag_id='sensor_test_1'
     , external_task_id='end_notify'
     #, execution_delta=timedelta(minutes=1)
-    , mode='reschedule'
-    , queue='qmaria'
+    #, mode='reschedule'
     , dag=dag
 )
 

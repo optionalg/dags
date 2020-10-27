@@ -30,7 +30,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 30, tzinfo=local_tz),
+    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
     'catchup': False,
 }    
 
@@ -62,7 +62,7 @@ id_update_merge_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='id_merge_update'
     , external_task_id='id_merge_update'
-    , mode='reschedule'
+    #, mode='reschedule'
     , dag=dag
 )
 # ID 크롤링 종료 알림
@@ -104,7 +104,7 @@ musinsa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='musinsa_review_crawling'
     , external_task_id='review_analyze'
-    , mode='reschedule'
+    #, mode='reschedule'
     , dag=dag
 )
 # 다나와 실행 감지
@@ -112,7 +112,7 @@ danawa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_review_crawling'
     , external_task_id='review_analyze'
-    , mode='reschedule'
+    #, mode='reschedule'
     , dag=dag
 )
 # 리뷰 크롤링 종료 알림

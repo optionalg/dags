@@ -12,8 +12,6 @@ import pymysql
 import glob, os
 from sqlalchemy import create_engine
 
-
-
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
