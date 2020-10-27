@@ -70,7 +70,6 @@ danawa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_review_crawling'
     , external_task_id='review_analyze'
-    , execution_delta 
     , mode='reschedule'
     , dag=dag
 )
