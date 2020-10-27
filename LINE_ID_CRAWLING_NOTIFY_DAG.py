@@ -62,7 +62,8 @@ id_update_merge_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='id_merge_update'
     , external_task_id='id_merge_update'
-    #, mode='reschedule'
+    , poke_interval=60*2
+    , mode='reschedule'
     , dag=dag
 )
 # ID 크롤링 종료 알림

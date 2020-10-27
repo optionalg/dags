@@ -62,7 +62,8 @@ musinsa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='musinsa_review_crawling'
     , external_task_id='review_analyze'
-    #, mode='reschedule'
+    , pork_interval=60*3
+    , mode='reschedule'
     , dag=dag
 )
 # 다나와 실행 감지
@@ -70,7 +71,8 @@ danawa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_review_crawling'
     , external_task_id='review_analyze'
-    #, mode='reschedule'
+    , pork_interval=60*4
+    , mode='reschedule'
     , dag=dag
 )
 # 리뷰 크롤링 종료 알림
