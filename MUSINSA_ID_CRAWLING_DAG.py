@@ -248,16 +248,19 @@ def truncate():
             """
             curs.execute(truncate_table)
             try:
+                create_seq = """
+                    CREATE SEQUENCE seq_musinsa_category START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
+            except:
                 drop_seq = """
                     DROP SEQUENCE seq_musinsa_category;
                 """
                 curs.execute(drop_seq)
-            except:
-                pass
-            create_seq = """
-                CREATE SEQUENCE seq_musinsa_category START WITH 1 INCREMENT BY 1;
-            """
-            curs.execute(create_seq)
+                create_seq = """
+                    CREATE SEQUENCE seq_musinsa_category START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
     finally:
         conn.close()
 

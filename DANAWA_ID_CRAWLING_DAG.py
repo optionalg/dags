@@ -41,6 +41,23 @@ def get_danawa_brand_count():
 # 신발 정보 가져오는 함수
 def get_shoes_info(b_name, page):
 
+    if b_name == "MLB":
+        b_name = "엠엘비"
+    elif b_name == 'BSQT':
+        b_name = "비에스큐티"
+    elif b_name == "SNRD":
+        b_name = "에스엔알디"
+        
+    shosex = ['남성용', '여성용', '남녀공용']
+
+    danacate = [['슬립온'], ['몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
+        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화']
+        , ['릿지화', '축구화', '탁구화', '운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화', '볼링화', '아쿠아슈즈', '트레이닝화', '테니스화', '배드민턴화',
+           '인조잔디화', '포인트화', '경등산화', '중등산화', '트레킹화', '야구화']
+        , ['부츠', '워커'], ['로퍼', '옥스퍼드', '컴포트화', '모카신']]
+        
+    musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
+    
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -63,106 +80,63 @@ def get_shoes_info(b_name, page):
             break
         except:
             pass
-        try:
-            # 모델 코드, 모델 이름, 모델 정보
-            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
-            prod_infos = driver.find_elements_by_class_name('spec_list')
-            prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
-            for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
-                prod_id = q.get_attribute('id')[20:]
-                prod_name = w.text
-                prod_info = e.text
-                prod_cost = r.text
-                prod_category = e.text.split(sep='/')[1]
-                shoes_full_info.append([b_name, prod_id, prod_name, prod_category, prod_info, prod_cost])
-        # 몇몇 브랜드에서 category를 split하지 못해 에러 발생
-        except:
-            prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
-            prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
-            prod_infos = driver.find_elements_by_class_name('spec_list')
-            prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
-            for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
-                prod_id = q.get_attribute('id')[20:]
-                prod_name = w.text
-                prod_info = e.text
-                prod_cost = r.text
-                shoes_full_info.append([b_name, prod_id, prod_name,'오류', prod_info,prod_cost])
+        # 모델 코드, 모델 이름, 모델 정보
+        prod_ids = driver.find_elements_by_class_name('relation_goods_unit')
+        prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
+        prod_infos = driver.find_elements_by_class_name('spec_list')
+        prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
+        for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
+            #   정보에서 추출
+            prod_info = e.text
+            prod_gender = ''
+            prod_heel_size = ''
+            prod_category = ''
+            #   신발 성별 추출
+            for n in shosex:
+                if n in prod_info:
+                    prod_gender = n
+            if prod_gender not in shosex:
+                continue
+            #   굽 추출
+            splitinfo = prod_info.split('/')
+            for n in splitinfo:
+                if ' 총굽: ' in n:
+                    prod_heel_size = n.strip()[3:]
+            #   카테고리 무신사기준으로 변경
+            for n in range(0, len(danacate)):
+                for m in range(0, len(danacate[n])):
+                    if danacate[n][m] in prod_info:
+                        prod_category = musincate[n]
+            if prod_category == '':
+                continue
+            
+            #id, 모델명, 품번
+            prod_id = q.get_attribute('id')[20:]
+            prod_name = w.text
+            prod_shono = ''
+            tmp_name = prod_name.split(' ')
+            for n in tmp_name:
+                if re.match('.*[a-zA-Z]*.*\d+.*', n):
+                    prod_shono = n
+                    prod_name = ' '.join(splitmo[1:splitmo.index(n)])
+                    
+            #   가격추출 
+            prod_cost = r.text
+            prod_cost = ''.join(prod_cost[:-1].split(','))
+
+            shoes_full_info.append([b_name, prod_id, prod_shono, prod_name, prod_category, prod_gender, prod_heel_size, prod_cost])
                 
+    driver.close()
     # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_raw_{b_name}_id.csv'
+    filename = f'/root/reviews/danawa_{b_name}_id.csv'
     f = open(filename, 'w', encoding='utf-8', newline='')
     csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand','danawa_id','modelname','category','prod_info','prod_cost'])
+    csvWriter.writerow(['brand','danawa_id','shono','modelname','category','shosex','heelsize','price_d'])
     for i in shoes_full_info:
         csvWriter.writerow(i)
     f.close()
-    driver.close()
 
-    # 저장된 파일 편
-    danawa = pd.read_csv(f'/root/reviews/danawa_raw_{b_name}_id.csv', index_col=0, thousands=',')
-
-    danawa['shono'] = None
-
-    shosex = ['남성용', '여성용', '남녀공용']
-    danawa['shosex'] = None
-
-    danacate = [['슬립온'], ['몽크스트랩'], ['펌프스'], ['플랫'], ['샌들'], ['슬리퍼']
-        , ['런닝화', '트레일런닝화', '워킹화', '마라톤화']
-        , ['릿지화', '축구화', '탁구화', '운동화', '농구화', '스니커즈', '복싱화', '아쿠아트레킹화', '볼링화', '아쿠아슈즈', '트레이닝화', '테니스화', '배드민턴화',
-           '인조잔디화', '포인트화', '경등산화', '중등산화', '트레킹화', '야구화']
-        , ['부츠', '워커'], ['로퍼', '옥스퍼드', '컴포트화', '모카신']]
-    musincate = ['캔버스', '구두', '힐', '플랫', '샌들', '슬리퍼', '러닝화', '스니커즈', '부츠', '로퍼']
-
-    danawa['heelsize'] = None
-    danawa['price_d'] = None
-
-    for i in danawa.index:
-        splitmo = danawa['modelname'][i].split(' ') # 에러
-        for n in splitmo:
-            if re.match('.*[a-zA-Z]*.*\d+.*', n):
-                danawa['shono'][i] = n
-                if danawa['modelname'][i][0] == 'X': # 에러
-                    danawa['modelname'][i] = danawa['brand'][i] + ' ' + ' '.join(splitmo[1:splitmo.index(n)])
-                else:
-                    danawa['modelname'][i] = ' '.join(splitmo[1:splitmo.index(n)])
-        #   신발 성별 추출
-        for n in shosex:
-            if n in danawa['prod_info'][i]:
-                danawa['shosex'][i] = n
-        #   굽 추출
-        splitinfo = danawa['prod_info'][i].split('/')
-        for n in splitinfo:
-            if ' 총굽: ' in n:
-                danawa['heelsize'][i] = n.strip()[3:]
-        #   가격추출
-        danawa['price_d'][i] = ''.join(danawa['prod_cost'][i][:-1].split(','))
-
-        #   카테고리 무신사기준으로 변경
-        for n in range(0, len(danacate)):
-            for m in range(0, len(danacate[n])):
-                if danacate[n][m] in danawa['prod_info'][i]:
-                    danawa['category'][i] = musincate[n]
-
-        del danawa['prod_info']
-
-        if b_name == "MLB":
-            danawa.loc[danawa["brand"] == "MLB", "brand"] = "엠엘비"
-        elif b_name == 'BSQT':
-            danawa.loc[danawa["brand"] == "BSQT", "brand"] = "비에스큐티"
-        elif b_name == "SNRD":
-            danawa.loc[danawa["brand"] == "SNRD", "brand"] = "에스엔알디"
-
-        danawa.drop_duplicates(inplace=True)
-
-        #   신발카테고리가 아니거나 성인용이 아닌 신발 삭제
-        if (danawa['category'][i] not in musincate) or (danawa['shosex'][i] not in shosex):
-            danawa.drop(i, axis=0, inplace=True)
-
-
-    danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
-
-
+    danawa = pd.Dataframe(f'/root/reviews/danawa_{b_name}_id.csv')
     # 마리아디비로 전송
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
@@ -208,16 +182,19 @@ def truncate():
             """
             curs.execute(truncate_table)
             try:
+                create_seq = """
+                    CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
+            except:
                 drop_seq = """
                     DROP SEQUENCE seq_danawa_brand;
                 """
                 curs.execute(drop_seq)
-            except:
-                pass
-            create_seq = """
-                CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
-            """
-            curs.execute(create_seq)
+                create_seq = """
+                    CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
+                """
+                curs.execute(create_seq)
     finally:
         conn.close()
         
