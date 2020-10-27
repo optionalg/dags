@@ -41,8 +41,8 @@ def check_drop_seq(**kwargs):
         check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end')
         if check_danawa:
             time.sleep(60*5)
-    while check:
-        check = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
+    while check_musinsa:
+        check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
         if check_musinsa:
             time.sleep(60*5)
 
