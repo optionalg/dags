@@ -1,4 +1,3 @@
-
 # crawling
 import os
 import sys
@@ -22,6 +21,7 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 import sys
 import pendulum
+import pymysql
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
