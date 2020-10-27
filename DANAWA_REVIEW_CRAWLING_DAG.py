@@ -162,16 +162,17 @@ def get_b_name_prod_ids(last_excute_date, limit_date, **kwargs):
     
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
-def update_excute_date():
+def update_excute_date(today):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
         with conn.cursor() as curs:
-            select_musinsa_id = """
-                
+            update_date = """
+                update lastcrawling set latest_date=now();
             """
-            curs.execute(select_musinsa_id)
-            ids = curs.fetchall()
+            curs.execute(update_date)
+            conn.commit()
+
     finally:
         conn.close()
         
