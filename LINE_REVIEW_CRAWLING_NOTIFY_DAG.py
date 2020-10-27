@@ -34,9 +34,6 @@ default_args = {
     'catchup': False,
 }    
 
-# 처리 순서
-id_start_notify >> id_update_merge_dag_sensor >> id_end_notify
-
 #===================================================#
 #=================review_crawling===================#
 #===================매 일 실행==========================#
