@@ -66,14 +66,14 @@ id_merge_update = PythonOperator(
 # id 크롤링 실행 감지
 musinsa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
-    , external_dag_id='musinsa_id_crawling'
+    , external_dag_id='musinsa_id_crawling_to_sql'
     , external_task_id='drop_seq'
     , mode='reschedule'
     , dag=dag
 )
 danawa_id_crawling_dag_sensor = ExternalTaskSensor(
       task_id='external_sensor'
-    , external_dag_id='danawa_id_crawling'
+    , external_dag_id='danawa_id_crawling_to_sql'
     , external_task_id='drop_seq'
     , mode='reschedule'
     , dag=dag
