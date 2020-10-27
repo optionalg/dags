@@ -121,7 +121,7 @@ def get_shoes_info(b_name, page, **kwargs):
             for n in tmp_name:
                 if re.match('.*[a-zA-Z]*.*\d+.*', n):
                     prod_shono = n
-                    prod_name = ' '.join(splitmo[1:splitmo.index(n)])
+                    prod_name = ' '.join(tmp_name[1:tmp_name.index(n)])
                     
             #   가격추출 
             prod_cost = r.text
