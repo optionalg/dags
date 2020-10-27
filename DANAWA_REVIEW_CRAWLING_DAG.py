@@ -162,7 +162,7 @@ def get_b_name_prod_ids(last_excute_date, limit_date, **kwargs):
     
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
-def update_excute_date(today):
+def update_excute_date():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
