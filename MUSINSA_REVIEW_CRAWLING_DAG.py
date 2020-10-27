@@ -222,14 +222,16 @@ def update_excute_date():
                            database='footfoot')
     try:
         with conn.cursor() as curs:
-            select_musinsa_id = """
-                
+            update_date = """
+                update lastcrawling set latest_date=now();
             """
-            curs.execute(select_musinsa_id)
-            ids = curs.fetchall()
+            curs.execute(update_date)
+            conn.commit()
+
     finally:
         conn.close()
-        
+
+
 #--------------------------------에어 플로우 코드----------------------------------#
 
 # 서울 시간 기준으로 변경
