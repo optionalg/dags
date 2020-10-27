@@ -30,8 +30,7 @@ def id_merge_update():
                     on m.shono=d.shono and m.brand=d.brand);
             """
             curs.execute(sql)
-
-        conn.commit()
+            conn.commit()
 
     finally:
         conn.close()
