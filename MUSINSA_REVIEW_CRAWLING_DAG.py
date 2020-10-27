@@ -56,6 +56,22 @@ def date_check():
     last_date = last_date.replace(hour=23,minute=59,second=59)
     return last_date, limit_date
     
+def get_category_prod_ids():
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
+    try:
+        with conn.cursor() as curs:
+            select_musinsa_id = """
+                SELECT musinsa_id
+                  FROM musinsa_shoes;
+            """
+            curs.execute(select_musinsa_id)
+            ids = curs.fetchall()
+    finally:
+        conn.close()
+        
+    return ids
+    
 #--------------------------------크롤링 코드----------------------------------#
 
 def get_shoes_review(prod_ids, last_excute_date, limit_date):
@@ -143,23 +159,6 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date):
             f.close()
     driver.close()
 
-def get_category_prod_ids():
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
-                           database='footfoot')
-    try:
-        with conn.cursor() as curs:
-            select_musinsa_id = """
-                SELECT musinsa_id
-                  FROM musinsa_shoes;
-            """
-            curs.execute(select_musinsa_id)
-            ids = curs.fetchall()
-    finally:
-        conn.close()
-        
-    return ids
-
-
 def distribute_task(ids, last_excute_date, limit_date, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
@@ -195,9 +194,9 @@ def distribute_task(ids, last_excute_date, limit_date, **kwargs):
             end_point = curs.fetchone()[0]
 
             try:
-                prod_ids = ids[start_point:end_point]
+                prod_ids = prod_ids_all[start_point:end_point]
             except:
-                prod_ids = ids[start_point:]
+                prod_ids = prod_ids_all[start_point:]
 
             prod_ids_len = len(prod_ids)
 
@@ -248,7 +247,7 @@ default_args = {
 # DAG인스턴스 생성
 dag = DAG(
     # 웹 UI에서 표기되며 전체 DAG의 ID
-      dag_id='musinsa_review_crawling_from_sql'
+      dag_id='naver_blog_review_crawling_from_sql'
     # DAG 설정을 넣어줌
     , default_args=default_args
     # 최대 실행 횟수
