@@ -8,9 +8,9 @@ import csv
 import datetime as dt
 import pymysql
 from sqlalchemy import create_engine
-from PIL import Image
+#from PIL import Image
 import base64
-from io import BytesIO
+#from io import BytesIO
 
 # airflow 
 from airflow import DAG
