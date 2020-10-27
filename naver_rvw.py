@@ -40,54 +40,55 @@ for brand_name_list,brand_num_list in naver_brand.items():
         url = 'https://search.shopping.naver.com/search/all?brand='+str(brand_num_list)+'&origQuery=%EC%8B%A0%EB%B0%9C&pagingIndex=' + str(page) + '&pagingSize=80&productSet=model&query=%EC%8B%A0%EB%B0%9C&sort=review&timestamp=&viewType=list'
         driver.get(url)
         time.sleep(3)
-        prod_url_list = driver.find_elements_by_css_selector(
-            '#__next > div > div.container > div.style_inner__18zZX > div.style_content_wrap__1PzEo > div.style_content__2T20F > ul > div > div > li > div > div.basicList_img_area__a3NRA > div > a')
+        prod_url_list = driver.find_elements_by_xpath(
+            '//*[@id="__next"]/div/div[2]/div[2]/div[3]/div[1]/ul/div/div/li/div/div[2]/div[1]/a')
         for prod_url_attr in prod_url_list:
             base_url = prod_url_attr.get_attribute('href')
             url_list.append(base_url)
-        driver.get(url_list)  # get = 이동시키는 역할
-        time.sleep(3)
-        driver.implicitly_wait(10)
-        prod_name = driver.find_element_by_css_selector(
-            '#container > div.summary_area > div.summary_info._itemSection > div > div.h_area > h2')
-        prod_name_text = prod_name.text
-        brand = driver.find_element_by_css_selector(
-            '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(2) > em')
-        brand_text = brand.text
+            for prod_url in url_list:
+                driver.get(prod_url)  # get = 이동시키는 역할
+                time.sleep(3)
+                driver.implicitly_wait(10)
+                prod_name = driver.find_element_by_css_selector(
+                    '#container > div.summary_area > div.summary_info._itemSection > div > div.h_area > h2')
+                prod_name_text = prod_name.text
+                brand = driver.find_element_by_css_selector(
+                    '#container > div.summary_area > div.summary_info._itemSection > div > div.goods_info > div > span:nth-child(2) > em')
+                brand_text = brand.text
 
 
-        # 네이버 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-        prod_main_img = driver.find_element_by_css_selector('#viewImage')
-        img_url = prod_main_img.get_attribute('src')
-        r = requests.get(img_url)
-        file = open("naver_img_{}.jpg".format(str(prod_name_text)), "wb")
-        file.write(r.content)
-        file.close()
+                # 네이버 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
+                prod_main_img = driver.find_element_by_css_selector('#viewImage')
+                img_url = prod_main_img.get_attribute('src')
+                r = requests.get(img_url)
+                file = open("naver_img_{}.jpg".format(str(prod_name_text)), "wb")
+                file.write(r.content)
+                file.close()
 
 
-        all_review_counts = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
-        end_page = int(all_review_counts.text) / 20
-        try:
-            for page in range(1, int(end_page)):
-                driver.execute_script(f"shop.detail.ReviewHandler.page({page+1}, '_review_paging'); return false;")
-                time.sleep(5)
-        except:
-            pass
-            prod_infos = driver.find_elements_by_css_selector(
-                '#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
-            review_dates = driver.find_elements_by_css_selector(
-                '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
-            reviews = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
-            for review_date, prod_info, review in zip(review_dates, prod_infos, reviews):
-                review_date_text = review_date.text
-                prod_info_text = prod_info.text
-                review_text = review.text
-                naver_info_and_rvw.append([brand_text, prod_name_text, review_date_text, prod_info_text, review_text])
+                all_review_counts = driver.find_element_by_css_selector('#snb > ul > li.mall_review > a > em')
+                end_page = int(all_review_counts.text) / 20
+                try:
+                    for page in range(1, int(end_page)):
+                        driver.execute_script(f"shop.detail.ReviewHandler.page({page+1}, '_review_paging'); return false;")
+                        time.sleep(5)
+                except:
+                    pass
+                    prod_infos = driver.find_elements_by_css_selector(
+                        '#_review_list > li > div > div.avg_area > span > span:nth-child(4)')
+                    review_dates = driver.find_elements_by_css_selector(
+                        '#_review_list > li > div > div.avg_area > span > span:nth-child(3)')
+                    reviews = driver.find_elements_by_css_selector('#_review_list > li > div > div.atc')
+                    for review_date, prod_info, review in zip(review_dates, prod_infos, reviews):
+                        review_date_text = review_date.text
+                        prod_info_text = prod_info.text
+                        review_text = review.text
+                        naver_info_and_rvw.append([brand_text, prod_name_text, review_date_text, prod_info_text, review_text])
 
-    refilename = f'/root/reviews/naver_{brand_name_list}.csv'
-    f = open(refilename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand', 'prod_name', 'review_info','review_date', 'reviews'])
-    for w in naver_info_and_rvw:
-        csvWriter.writerow(w)
-    f.close()
+            refilename = f'/root/reviews/naver_{brand_name_list}.csv'
+            f = open(refilename, 'w', encoding='utf-8', newline='')
+            csvWriter = csv.writer(f)
+            csvWriter.writerow(['brand', 'prod_name', 'review_info','review_date', 'reviews'])
+            for w in naver_info_and_rvw:
+                csvWriter.writerow(w)
+            f.close()
