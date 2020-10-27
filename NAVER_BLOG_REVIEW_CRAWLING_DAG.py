@@ -377,7 +377,7 @@ count = get_shoes_count()
 modelnames = get_prod_names()
 info_n=0
 for i in range(0, count):
-    if info_n = len(client_info):
+    if info_n == len(client_info):
         info_n=0
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(i),
