@@ -1,14 +1,12 @@
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
-
 import pymysql
 
-def id_merge_update():
+def id_merge_update(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', user='footfootbig', password='footbigmaria!',
                            db='footfoot', charset='utf8')
 
@@ -34,6 +32,19 @@ def id_merge_update():
 
     finally:
         conn.close()
+        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False)
+        
+def check_drop_seq(**kwargs):
+    check_danawa = True
+    check_musinsa = True
+    while check_danawa:
+        check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end')
+        if check_danawa:
+            time.sleep(60*5)
+    while check:
+        check = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
+        if check_musinsa:
+            time.sleep(60*5)
 
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -42,8 +53,9 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(2020, 10, 10, tzinfo=local_tz),
     'catchup': False,
+    'provide_context': True
 }    
 
 # DAG인스턴스 생성
@@ -55,7 +67,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
+    , schedule_interval=timedelta(days=14)
 )
 
 id_merge_update = PythonOperator(
@@ -63,23 +75,15 @@ id_merge_update = PythonOperator(
     python_callable = id_merge_update,
     dag = dag,
 )
+
 # id 크롤링 실행 감지
-musinsa_id_crawling_dag_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='musinsa_id_crawling_to_sql'
-    , external_task_id='drop_seq'
-    , mode='reschedule'
-    , dag=dag
-)
-danawa_id_crawling_dag_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='danawa_id_crawling_to_sql'
-    , external_task_id='drop_seq'
-    , mode='reschedule'
-    , dag=dag
+check_drop_seq = PythonOperator(
+    task_id = 'check_drop_seq',
+    python_callable = check_drop_seq,
+    dag = dag,
 )
 
-[musinsa_id_crawling_dag_sensor, danawa_id_crawling_dag_sensor] >> id_merge_update
+check_drop_seq >> id_merge_update
 
 
 

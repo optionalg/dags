@@ -15,13 +15,14 @@ from sqlalchemy import create_engine
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
 import requests
 
-def get_danawa_brand_count():
+#--------------------------------실행 초기 설정 코드----------------------------------#
+
+def get_danawa_brand_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -38,8 +39,10 @@ def get_danawa_brand_count():
 
     return count
 
+#--------------------------------크롤링 코드----------------------------------#
+
 # 신발 정보 가져오는 함수
-def get_shoes_info(b_name, page):
+def get_shoes_info(b_name, page, **kwargs):
 
     if b_name == "MLB":
         b_name = "엠엘비"
@@ -145,7 +148,7 @@ def get_shoes_info(b_name, page):
     finally:
         conn.close()
 
-def get_b_name_page():
+def get_b_name_page(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -172,7 +175,7 @@ def get_b_name_page():
         conn.close()
 
 
-def truncate():
+def truncate(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
@@ -198,9 +201,8 @@ def truncate():
     finally:
         conn.close()
         
-def drop_seq():
+def drop_seq(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
-
     try:
         with conn.cursor() as curs:
             drop_seq = """
@@ -211,6 +213,16 @@ def drop_seq():
         pass
     finally:
         conn.close()
+        kwargs['ti'].xcom_push(key='danawa_id_crawling_end', value=False)
+
+#--------------------------------에어 플로우 코드----------------------------------#
+
+def check_id_start_notify(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='id_crawling_start')
+        if check:
+            time.sleep(60*5)
         
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -219,8 +231,9 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
-    'catchup': False,
+    'start_date': datetime(2020, 10, 10, tzinfo=local_tz),
+    'provide_context': True,
+    'catchup': False
 }    
     
 # DAG인스턴스 생성
@@ -232,16 +245,14 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
+    , schedule_interval=timedelta(days=14)
 )
 
 # 시작 감지
-start_notify_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='line_notify_id_crawling'
-    , external_task_id='id_start_notify'
-    , mode='reschedule'
-    , dag=dag
+check_id_start_notify = PythonOperator(
+    task_id='check_id_start_notify',
+    python_callable=check_id_start_notify,
+    dag=dag,
 )
 
 # 테이블 초기화 DAG
@@ -268,5 +279,5 @@ for count in range(0, count):
         python_callable=get_b_name_page,
         dag=dag
     )
-    start_notify_sensor >> truncate >> id_crawling >> drop_seq
+    check_id_start_notify >> truncate >> id_crawling >> drop_seq
 

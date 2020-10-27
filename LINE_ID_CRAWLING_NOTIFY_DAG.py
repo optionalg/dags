@@ -1,14 +1,14 @@
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
+import time
 import pendulum
 import requests
 
 # 입력받은 context를 라인으로 메시지 보내는 함수
-def notify(context, **kwargs): 
+def notify(context=None, xcom_push=None,**kwargs): 
     TARGET_URL = 'https://notify-api.line.me/api/notify'
     TOKEN = 'GQLQ8hOOwmtbKi9hHtS0KvLZxMhXywVWHsGeCbYGg7J'
 
@@ -22,6 +22,21 @@ def notify(context, **kwargs):
             'message' : context
         }
     )
+    if xcom_push != None:
+        kwargs['ti'].xcom_push(key=xcom_push, value=False)
+
+def initiate(**kwargs):
+    kwargs['ti'].xcom_push(key='id_crawling_start', value=True)
+    kwargs['ti'].xcom_push(key='danawa_id_crawling_end', value=True)
+    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=True)
+    kwargs['ti'].xcom_push(key='id_merge_update_end', value=True)
+    
+def check_id_merge_update(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='id_merge_update_end')
+        if check:
+            time.sleep(60*5)
 
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -32,6 +47,7 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 10, tzinfo=local_tz),
     'catchup': False,
+    'provide_context': True
 }    
 
 #===================================================#
@@ -49,22 +65,25 @@ dag = DAG(
     # 실행 주기
     , schedule_interval=timedelta(days=14)
 )
+# 초기화
+initiate = PythonOperator(
+    task_id='initiate',
+    python_callable=initiate,
+    dag=dag
+)
 # ID 크롤링 시작 알림
 id_start_notify = PythonOperator(
     task_id='id_start_notify',
     python_callable=notify,
-    op_kwargs={'context':'ID 크롤링을 시작하였습니다.'},
+    op_kwargs={'context':'ID 크롤링을 시작하였습니다.'
+              ,'xcom_push':'id_crawling_start'},
     dag=dag
 )
-
 # merge 실행 감지
-id_update_merge_dag_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='id_merge_update'
-    , external_task_id='id_merge_update'
-    , poke_interval=60*2
-    , mode='reschedule'
-    , dag=dag
+check_id_merge_update = PythonOperator(
+    task_id='check_id_merge_update',
+    python_callable=check_id_merge_update,
+    dag=dag
 )
 # ID 크롤링 종료 알림
 id_end_notify = PythonOperator(
@@ -75,4 +94,4 @@ id_end_notify = PythonOperator(
 )
 
 # 처리 순서
-id_start_notify >> id_update_merge_dag_sensor >> id_end_notify
+initiate >> id_start_notify >> check_id_merge_update >> id_end_notify

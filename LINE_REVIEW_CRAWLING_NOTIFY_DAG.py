@@ -62,7 +62,6 @@ musinsa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='musinsa_review_crawling'
     , external_task_id='review_analyze'
-    , pork_interval=60*3
     , mode='reschedule'
     , dag=dag
 )
@@ -71,7 +70,7 @@ danawa_review_crawling_sensor = ExternalTaskSensor(
       task_id='external_sensor'
     , external_dag_id='danawa_review_crawling'
     , external_task_id='review_analyze'
-    , pork_interval=60*4
+    , execution_delta 
     , mode='reschedule'
     , dag=dag
 )
