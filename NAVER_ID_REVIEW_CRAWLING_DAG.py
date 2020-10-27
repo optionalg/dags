@@ -7,9 +7,7 @@ import time
 import csv
 import pandas as pd
 import numpy as np
-import datetime as dt
 import pymysql
-import glob, os
 from sqlalchemy import create_engine
 
 # airflow 
@@ -55,8 +53,8 @@ def get_shoes_review(b_name, page):
         driver.get(url)
         time.sleep(3)
         url_list = []
-        prod_url_list = driver.find_elements_by_css_selector(
-            '#__next > div > div.container > div.style_inner__18zZX > div.style_content_wrap__1PzEo > div.style_content__2T20F > ul > div > div > li > div > div.basicList_img_area__a3NRA > div > a')
+        prod_url_list = driver.find_elements_by_xpath(
+            '//*[@id="__next"]/div/div[2]/div[2]/div[3]/div[1]/ul/div/div/li/div/div[2]/div[1]/a')
         for prod_url_attr in prod_url_list:
             base_url = prod_url_attr.get_attribute('href')
             url_list.append(base_url)
@@ -137,19 +135,19 @@ def truncate():
                            database='footfoot')
     try:
         with conn.cursor() as curs:
-            truncate_table = """
-                truncate table danawa_shoes;
-            """
-            curs.execute(truncate_table)
+            #truncate_table = """
+            #    truncate table naver_shoes;
+            #"""
+            #curs.execute(truncate_table)
             try:
                 drop_seq = """
-                    DROP SEQUENCE seq_danawa_brand;
+                    DROP SEQUENCE seq_naver_brand;
                 """
                 curs.execute(drop_seq)
             except:
                 pass
             create_seq = """
-                CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
+                CREATE SEQUENCE seq_naver_brand START WITH 1 INCREMENT BY 1;
             """
             curs.execute(create_seq)
     finally:
@@ -161,7 +159,7 @@ def drop_seq():
     try:
         with conn.cursor() as curs:
             drop_seq = """
-                DROP SEQUENCE seq_danawa_brand;
+                DROP SEQUENCE seq_naver_brand;
             """
             curs.execute(drop_seq)
     except:
@@ -217,7 +215,7 @@ drop_seq = PythonOperator(
 
 # DAG 동적 생성
 # 크롤링 DAG
-count = get_danawa_brand_count()
+count = get_naver_brand_count()
 
 for count in range(0, count):
     id_crawling = PythonOperator(
