@@ -198,6 +198,8 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2020, 10, 10, tzinfo=local_tz),
     'provide_context': True,
+    'retries': 2,
+    'retry_delay':timedelta(minutes=1),
     'catchup': False
 }    
     
