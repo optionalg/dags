@@ -25,7 +25,6 @@ import requests
 def get_danawa_brand_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
-
     try:
         with conn.cursor() as curs:
             select_count = """
@@ -33,11 +32,11 @@ def get_danawa_brand_count(**kwargs):
             """
             curs.execute(select_count)
             count = curs.fetchone()[0]
-
+            
     finally:
         conn.close()
 
-    return count
+    return count + 1
 
 #--------------------------------크롤링 코드----------------------------------#
 
@@ -148,32 +147,23 @@ def get_shoes_info(b_name, page, **kwargs):
     finally:
         conn.close()
 
-def get_b_name_page(**kwargs):
+def get_b_name_page(count, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
-
     try:
         with conn.cursor() as curs:
-
-            nextval = """
-                SELECT NEXTVAL(seq_danawa_brand);
-            """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
 
             select_brand = """
                 SELECT brand, page
                   FROM danawa_brand
                  WHERE idx=%s;
             """
-            curs.execute(select_brand, next_val)
+            curs.execute(select_brand, count)
             b_name, page = curs.fetchone()
-
-            get_shoes_info(b_name, page)
-
     finally:
         conn.close()
-
+        
+    get_shoes_info(b_name, page)
 
 def truncate(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
@@ -184,36 +174,11 @@ def truncate(**kwargs):
                 truncate table danawa_shoes;
             """
             curs.execute(truncate_table)
-            try:
-                create_seq = """
-                    CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
-                """
-                curs.execute(create_seq)
-            except:
-                drop_seq = """
-                    DROP SEQUENCE seq_danawa_brand;
-                """
-                curs.execute(drop_seq)
-                create_seq = """
-                    CREATE SEQUENCE seq_danawa_brand START WITH 1 INCREMENT BY 1;
-                """
-                curs.execute(create_seq)
     finally:
         conn.close()
         
 def drop_seq(**kwargs):
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
-    try:
-        with conn.cursor() as curs:
-            drop_seq = """
-                DROP SEQUENCE seq_danawa_brand;
-            """
-            curs.execute(drop_seq)
-    except:
-        pass
-    finally:
-        conn.close()
-        kwargs['ti'].xcom_push(key='danawa_id_crawling_end', value=False)
+    kwargs['ti'].xcom_push(key='danawa_id_crawling_end', value=False)
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
@@ -273,10 +238,11 @@ drop_seq = PythonOperator(
 # 크롤링 DAG
 count = get_danawa_brand_count()
 
-for count in range(0, count):
+for count in range(1, count):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
         python_callable=get_b_name_page,
+        op_kwargs={'count':count},
         dag=dag
     )
     check_id_start_notify >> truncate >> id_crawling >> drop_seq
