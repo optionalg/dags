@@ -45,7 +45,7 @@ def get_musinsa_count(**kwargs):
         prod_ids_all.append(ids[i][0])
         
     splited_ids = []
-    for count in range(0,len(counts)):
+    for count in range(0,counts):
         start_point = 500 * count
         end_point = 500 * (count + 1)
         try:
