@@ -7,6 +7,7 @@ import time
 import csv
 import datetime as dt
 import pymysql
+from sqlalchemy import create_engine
 #from PIL import Image
 import base64
 #from io import BytesIO
@@ -201,9 +202,10 @@ def get_shoes_info(category, page, **kwargs):
     musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
 
     # 마리아디비로 전송
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
+    conn = engine.connect()
     try:
-        musinsa_df.to_sql(name='musinsa_shoes', con=conn, if_exists='append', index=False)
+        musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)
     finally:
         conn.close()
 
