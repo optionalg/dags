@@ -97,14 +97,15 @@ def get_shoes_info(category, page, **kwargs):
             pass
 
         # 브랜드, id
-        id_and_brand = driver.find_element_by_class_name('product_article_contents')
+        #id_and_brand = driver.find_element_by_class_name('product_article_contents')
+        id_and_brand = driver.find_element_by_css_selector('product_order_info > div.explan_product.product_info_section > ul > li:nth-child(1) > p.product_article_contents > strong')
         prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
         prod_brand_text = prod_brand.text
         prod_brand_clean = prod_brand_text.replace(' ','').replace('(','').replace(')','')
         id_and_brand_text = id_and_brand.text
         # prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
         try :
-            name_id = id_and_brand_text.split('/')[1]  # 모델품번
+            name_id = id_and_brand_text.split('/')[1].strip()  # 모델품번
         except :
             name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
 
@@ -202,7 +203,7 @@ def get_shoes_info(category, page, **kwargs):
     musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
 
     # 마리아디비로 전송
-    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
+    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", charset='utf-8')
     conn = engine.connect()
     try:
         musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)
@@ -251,7 +252,7 @@ def drop_seq(**kwargs):
 def check_id_start_notify(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='id_crawling_start')
+        check = kwargs['ti'].xcom_pull(key='id_crawling_start',dag_id='line_notify_id_crawling')
         if check:
             time.sleep(60*5)
         

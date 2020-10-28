@@ -34,7 +34,7 @@ def initiate(**kwargs):
 def check_id_merge_update(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='id_merge_update_end')
+        check = kwargs['ti'].xcom_pull(key='id_merge_update_end',dag_id='id_merge_update')
         if check:
             time.sleep(60*5)
 
