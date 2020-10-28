@@ -45,7 +45,7 @@ def check_review_crawling(**kwargs):
             
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
-
+today = datetime.today()
 # airflow DAG설정        
 default_args = {
     'owner': 'Airflow',
