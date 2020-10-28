@@ -9,7 +9,6 @@ import pymysql
 
 # airflow 
 from airflow import DAG
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 import sys
@@ -18,7 +17,7 @@ import requests
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
-def get_musinsa_count():
+def get_musinsa_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -28,14 +27,37 @@ def get_musinsa_count():
                 SELECT count(*) from musinsa_shoes;
             """
             curs.execute(select_count)
-            count = curs.fetchone()[0]
-
+            total = curs.fetchone()[0]
+            
+            select_musinsa_id = """
+                SELECT musinsa_id
+                  FROM musinsa_shoes;
+            """
+            curs.execute(select_musinsa_id)
+            ids = curs.fetchall()
     finally:
         conn.close()
-    count = int(count / 500) + 1
-    return count
 
-def date_check():
+    counts = int(total / 500) + 1
+
+    prod_ids_all = []
+    for i in range(0, len(ids)):
+        prod_ids_all.append(ids[i][0])
+        
+    splited_ids = []
+    for count in range(0,len(counts)):
+        start_point = 500 * count
+        end_point = 500 * (count + 1)
+        try:
+            prod_ids = prod_ids_all[start_point:end_point]
+            splited_ids.append(prod_ids)
+        except:
+            prod_ids = prod_ids_all[start_point:]
+            splited_ids.append(prod_ids)
+        
+    return counts, splited_ids
+    
+def date_check(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -45,36 +67,20 @@ def date_check():
                 SELECT * from lastcrawling;
             """
             curs.execute(sql)
-            last_date = curs.fetchone()[0]
+            last_excute_date = curs.fetchone()[0]
 
     finally:
         conn.close()
     # 지난 실행일 전날의 23시59분59초 부터 이번 실행일 전날의 23시59분59초 까지의 리뷰를 수집
     limit_date = datetime.today() - timedelta(days=1)
     limit_date = limit_date.replace(hour=23,minute=59,second=59)
-    last_date = last_date - timedelta(days=1)
-    last_date = last_date.replace(hour=23,minute=59,second=59)
-    return last_date, limit_date
-    
-def get_category_prod_ids():
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
-                           database='footfoot')
-    try:
-        with conn.cursor() as curs:
-            select_musinsa_id = """
-                SELECT musinsa_id
-                  FROM musinsa_shoes;
-            """
-            curs.execute(select_musinsa_id)
-            ids = curs.fetchall()
-    finally:
-        conn.close()
-        
-    return ids
+    last_excute_date = last_excute_date - timedelta(days=1)
+    last_excute_date = last_excute_date.replace(hour=23,minute=59,second=59)
+    return last_excute_date, limit_date
     
 #--------------------------------크롤링 코드----------------------------------#
 
-def get_shoes_review(prod_ids, last_excute_date, limit_date):
+def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -159,64 +165,9 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date):
             f.close()
     driver.close()
 
-def distribute_task(ids, last_excute_date, limit_date, **kwargs):
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
-                           database='footfoot')
-    try:
-        with conn.cursor() as curs:
-            prod_ids_all = []
-            for i in range(0, len(ids)):
-                prod_ids_all.append(ids[i][0])
-
-            try:
-                create_seq = """
-                    CREATE SEQUENCE seq_task_unit INCREMENT BY 500 MINVALUE 0;
-                """
-                curs.execute(create_seq)
-
-                create_seq2 = """
-                    CREATE SEQUENCE seq_task_unit2 INCREMENT BY 500 MINVALUE 500;
-                """
-                curs.execute(create_seq2)
-            except:
-                pass
-
-            select_start_point = """
-                SELECT NEXTVAL(seq_task_unit)
-            """
-            curs.execute(select_start_point)
-            start_point = curs.fetchone()[0]
-
-            select_end_point = """
-                SELECT NEXTVAL(seq_task_unit2)
-            """
-            curs.execute(select_end_point)
-            end_point = curs.fetchone()[0]
-
-            try:
-                prod_ids = prod_ids_all[start_point:end_point]
-            except:
-                prod_ids = prod_ids_all[start_point:]
-
-            prod_ids_len = len(prod_ids)
-
-            if prod_ids_len == 0:
-                drop_seq = """
-                    DROP SEQUENCE seq_task_unit;
-                """
-                curs.execute(drop_seq)
-
-                drop_seq2 = """
-                    DROP SEQUENCE seq_task_unit2;
-                """
-                curs.execute(drop_seq2)
-            else:
-                get_shoes_review(prod_ids, last_excute_date, limit_date)
-    finally:
-        conn.close()
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
-def update_excute_date():
+def update_excute_date(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
@@ -229,10 +180,18 @@ def update_excute_date():
 
     finally:
         conn.close()
+        kwargs['ti'].xcom_push(key='musinsa_review_crawling_end', value=False, dag_id='line_notify_review_crawling')
 
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
+def check_review_start_notify(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        if check:
+            time.sleep(60*5)
+            
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
 
@@ -240,8 +199,9 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(today.year, today.month, today.day, tzinfo=local_tz) - timedelta(hours=25),
     'catchup': False,
+    'provide_context': True
 }
 
 # DAG인스턴스 생성
@@ -253,16 +213,13 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
+    , schedule_interval=timedelta(days=1)
 )
 
-# id 크롤링 종료 감지
-start_notify_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='line_notify_review_crawling'
-    , external_task_id='review_start_notify'
-    , mode='reschedule'
-    , dag=dag
+check_review_start_notify = PythonOperator(
+    task_id='check_review_start_notify',
+    python_callable=check_review_start_notify,
+    dag=dag
 )
 
 update_excute_date = PythonOperator(
@@ -272,18 +229,17 @@ update_excute_date = PythonOperator(
 )
 
 # DAG 동적 생성
-count = get_musinsa_count()
-ids = get_category_prod_ids()
+counts, splited_ids = get_musinsa_count()
 last_excute_date, limit_date = date_check()
 
-for i in range(0, count):
+for count in range(0, counts):
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(i),
-        python_callable=distribute_task,
-        op_kwargs={'ids':ids
+        task_id='{0}_review_crawling'.format(count),
+        python_callable=get_shoes_review,
+        op_kwargs={'prod_ids':splited_ids[count]
                   ,'last_excute_date':last_excute_date
                   ,'limit_date':limit_date},
         dag=dag
     )
-    start_notify_sensor >> review_crawling >> update_excute_date
+    check_review_start_notify >> review_crawling >> update_excute_date
 

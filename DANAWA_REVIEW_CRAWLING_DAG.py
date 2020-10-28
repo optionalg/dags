@@ -13,7 +13,6 @@ import pymysql
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
@@ -21,7 +20,7 @@ import requests
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
-def get_danawa_brand_count():
+def get_danawa_brand_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -31,14 +30,14 @@ def get_danawa_brand_count():
                 SELECT count(*) from danawa_brand;
             """
             curs.execute(select_count)
-            count = curs.fetchone()[0]
+            counts = curs.fetchone()[0]
 
     finally:
         conn.close()
 
-    return count
+    return counts + 1
 
-def date_check():
+def date_check(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -61,7 +60,7 @@ def date_check():
 
 #--------------------------------크롤링 코드----------------------------------#
 
-def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date):
+def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -109,39 +108,19 @@ def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date):
         f.close()
     driver.close()
 
-def get_b_name_prod_ids(last_excute_date, limit_date, **kwargs):
+def get_b_name_prod_ids(last_excute_date, limit_date, count, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
         with conn.cursor() as curs:
-            try:
-                create_seq = """
-                    CREATE SEQUENCE seq_danawa_id START WITH 1 INCREMENT BY 1;
-                """
-                curs.execute(create_seq)
-            except:
-                pass
 
-            nextval = """
-                SELECT NEXTVAL(seq_danawa_id);
+            select_brand = """
+                SELECT brand
+                  FROM danawa_brand
+                 WHERE idx=%s;
             """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
-
-            try:
-                select_brand = """
-                    SELECT brand
-                      FROM danawa_brand
-                     WHERE idx=%s;
-                """
-                curs.execute(select_brand, next_val)
-                b_name = curs.fetchone()[0]
-
-            except:
-                drop_seq = """
-                            DROP SEQUENCE seq_danawa_id;
-                        """
-                curs.execute(drop_seq)
+            curs.execute(select_brand, count)
+            b_name = curs.fetchone()[0]
 
             select_danawa_id = """
                 SELECT danawa_id
@@ -162,7 +141,7 @@ def get_b_name_prod_ids(last_excute_date, limit_date, **kwargs):
     
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
-def update_excute_date():
+def update_excute_date(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
@@ -175,10 +154,17 @@ def update_excute_date():
 
     finally:
         conn.close()
-        
+        kwargs['ti'].xcom_push(key='danawa_review_crawling_end', value=False, dag_id='line_notify_review_crawling')
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
+def check_review_start_notify(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        if check:
+            time.sleep(60*5)
+            
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
 
@@ -186,8 +172,9 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(today.year, today.month, today.day, tzinfo=local_tz) - timedelta(hours=25),
     'catchup': False,
+    'provide_context': True
 }    
     
 # DAG인스턴스 생성
@@ -199,18 +186,14 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
+    , schedule_interval=timedelta(days=1)
 )
 
-# id 크롤링 종료 감지
-start_notify_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='line_notify_review_crawling'
-    , external_task_id='review_start_notify'
-    , mode='reschedule'
-    , dag=dag
+check_review_start_notify = PythonOperator(
+    task_id='check_review_start_notify',
+    python_callable=check_review_start_notify,
+    dag=dag
 )
-
 update_excute_date = PythonOperator(
       task_id='update_excute_date'
     , python_callable=update_excute_date
@@ -218,17 +201,18 @@ update_excute_date = PythonOperator(
 )
 
 # DAG 동적 생성
-count = get_danawa_brand_count()
+counts = get_danawa_brand_count()
 last_excute_date, limit_date = date_check()
 
-for count in range(0, count):
+for count in range(1, counts):
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=get_b_name_prod_ids,
         op_kwargs={'last_excute_date':last_excute_date
-                  ,'limit_date':limit_date},
+                  ,'limit_date':limit_date
+                  ,'count':count},
         dag=dag
     )
-    start_notify_sensor >> review_crawling >> update_excute_date
+    check_review_start_notify >> review_crawling >> update_excute_date
     
     
