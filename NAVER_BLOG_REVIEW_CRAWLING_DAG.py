@@ -28,47 +28,46 @@ import pymysql
 def get_shoes_count():
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
-
     try:
         with conn.cursor() as curs:
             select_count = """
                 SELECT count(*) from shoes;
             """
             curs.execute(select_count)
-            count = curs.fetchone()[0]
-
-    finally:
-        conn.close()
-    count = int(count / 1000) + 1
-    return count
-    
-def get_prod_names():
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
-                           database='footfoot')
-    try:
-        with conn.cursor() as curs:
+            counts = curs.fetchone()[0]
+            
             select_model_name = """
                 SELECT brand, modelname
                   FROM shoes;
             """
             curs.execute(select_model_name)
             names = curs.fetchall()
+            
     finally:
         conn.close()
         
-    return names
+    counts = int(count / 1000) + 1
+    
+    prod_ids_all = []
+    for i in range(0, len(names)):
+        prod_ids_all.append(names[i])
+        
+    splited_ids = []
+    for count in range(0,counts):
+        start_point = 1000 * count
+        end_point = 1000 * (count + 1)
+        try:
+            prod_ids = prod_ids_all[start_point:end_point]
+        except:
+            prod_ids = prod_ids_all[start_point:]
+        splited_ids.append(prod_ids)
+        
+    return counts, splited_ids
+
 #--------------------------------크롤링 코드----------------------------------#
 
-# 블로그 전체 실행(검색어, 한 페이지 당 결과 출력 수)
-def naver_blog_crawling(search_blog_keyword, display_count, client_id, client_secret):
-    # 검색 가능한 페이지 수
-    search_result_blog_page_count = get_blog_search_result_page_count(search_blog_keyword, display_count, client_id, client_secret)
-    # URL + 리뷰 크롤링
-    get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, client_id, client_secret)
-
-
 # 검색 가능한 페이지 수, 포스팅 수 분석(검색어, 한 페이지 당 결과 출력 수)
-def get_blog_search_result_page_count(search_blog_keyword, display_count, client_id, client_secret):
+def get_blog_search_count(search_blog_keyword, display_count, client_id, client_secret):
     # 키워드에 사이즈 내용이 포함된 포스팅 검색어
     search_keyword = urllib.parse.quote(search_blog_keyword + " +사이즈")
     # json 결과
@@ -240,63 +239,13 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
 
 def review_crawling(modelnames, client_id, client_secret):
-
     for blog_brand, shoes_keyword in modelnames:
         search_blog_keyword = blog_brand + " " + shoes_keyword
-        naver_blog_crawling(search_blog_keyword, 100, client_id, client_secret)
+        # 검색 가능한 페이지 수
+        search_result_count = get_blog_search_count(search_blog_keyword, 100, client_id, client_secret)
+        # URL + 리뷰 크롤링
+        get_blog_post(search_blog_keyword, 100, search_result_count, client_id, client_secret)
         
-def distribute_task(modelnames, client_id, client_secret, **kwargs):
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
-                           database='footfoot')
-    try:
-        with conn.cursor() as curs:
-
-            try:
-                create_seq = """
-                    CREATE SEQUENCE seq_task_naver_blog_unit INCREMENT BY 500 MINVALUE 0;
-                """
-                curs.execute(create_seq)
-
-                create_seq2 = """
-                    CREATE SEQUENCE seq_task_naver_blog_unit2 INCREMENT BY 500 MINVALUE 500;
-                """
-                curs.execute(create_seq2)
-            except:
-                pass
-
-            select_start_point = """
-                SELECT NEXTVAL(seq_task_naver_blog_unit)
-            """
-            curs.execute(select_start_point)
-            start_point = curs.fetchone()[0]
-
-            select_end_point = """
-                SELECT NEXTVAL(seq_task_naver_blog_unit2)
-            """
-            curs.execute(select_end_point)
-            end_point = curs.fetchone()[0]
-
-            try:
-                modelnames = modelnames[start_point:end_point]
-            except:
-                modelnames = modelnames[start_point:]
-
-            prod_ids_len = len(prod_ids)
-
-            if prod_ids_len == 0:
-                drop_seq = """
-                    DROP SEQUENCE seq_task_naver_blog_unit;
-                """
-                curs.execute(drop_seq)
-
-                drop_seq2 = """
-                    DROP SEQUENCE seq_task_naver_blog_unit2;
-                """
-                curs.execute(drop_seq2)
-            else:
-                review_crawling(modelnames, client_id, client_secret)
-    finally:
-        conn.close()
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
 def update_excute_date():
@@ -312,9 +261,17 @@ def update_excute_date():
 
     finally:
         conn.close()
+        kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=False, dag_id='line_notify_review_crawling')
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
+def check_review_start_notify(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        if check:
+            time.sleep(60*5)
+            
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
 
@@ -338,13 +295,10 @@ dag = DAG(
     , schedule_interval=timedelta(minutes=5)
 )
 
-# id 크롤링 종료 감지
-start_notify_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='line_notify_review_crawling'
-    , external_task_id='review_start_notify'
-    , mode='reschedule'
-    , dag=dag
+check_review_start_notify = PythonOperator(
+    task_id='check_review_start_notify',
+    python_callable=check_review_start_notify,
+    dag=dag
 )
 
 update_excute_date = PythonOperator(
@@ -373,19 +327,18 @@ client_info = [
 # client_secret = "BV6YkPWwPy"
 
 # DAG 동적 생성
-count = get_shoes_count()
-modelnames = get_prod_names()
+counts, modelnames = get_shoes_count()
 info_n=0
-for i in range(0, count):
+for count in range(0, counts):
     if info_n == len(client_info):
         info_n=0
     review_crawling = PythonOperator(
-        task_id='{0}_review_crawling'.format(i),
-        python_callable=distribute_task,
-        op_kwargs={'modelnames':modelnames
+        task_id='{0}_review_crawling'.format(count),
+        python_callable=review_crawling,
+        op_kwargs={'modelnames':modelnames[count]
                   ,'client_id':client_info[info_n][0]
                   ,'client_secret':client_info[info_n][1]},
         dag=dag
     )
     info_n = info_n + 1
-    start_notify_sensor >> review_crawling >> update_excute_date
+    check_review_start_notify >> review_crawling >> update_excute_date

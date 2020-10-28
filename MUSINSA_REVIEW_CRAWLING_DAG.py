@@ -50,10 +50,9 @@ def get_musinsa_count(**kwargs):
         end_point = 500 * (count + 1)
         try:
             prod_ids = prod_ids_all[start_point:end_point]
-            splited_ids.append(prod_ids)
         except:
             prod_ids = prod_ids_all[start_point:]
-            splited_ids.append(prod_ids)
+        splited_ids.append(prod_ids)
         
     return counts, splited_ids
     

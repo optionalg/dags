@@ -136,33 +136,11 @@ def truncate(**kwargs):
             #    truncate table naver_shoes;
             #"""
             #curs.execute(truncate_table)
-            try:
-                drop_seq = """
-                    DROP SEQUENCE seq_naver_brand;
-                """
-                curs.execute(drop_seq)
-            except:
-                pass
-            create_seq = """
-                CREATE SEQUENCE seq_naver_brand START WITH 1 INCREMENT BY 1;
-            """
-            curs.execute(create_seq)
     finally:
         conn.close()
         
-def drop_seq(**kwargs):
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
-
-    try:
-        with conn.cursor() as curs:
-            drop_seq = """
-                DROP SEQUENCE seq_naver_brand;
-            """
-            curs.execute(drop_seq)
-    except:
-        pass
-    finally:
-        conn.close()
+def xcom_push(**kwargs):
+    kwargs['ti'].xcom_push(key='naver_shopping_crawling_end', value=False, dag_id='line_notify_review_crawling')
         
 #--------------------------------에어 플로우 코드----------------------------------#
 
@@ -210,9 +188,9 @@ check_review_start_notify = PythonOperator(
     dag=dag
 )
 # 테이블 초기화 DAG
-drop_seq = PythonOperator(
-    task_id = 'drop_seq',
-    python_callable = drop_seq,
+xcom_push = PythonOperator(
+    task_id = 'xcom_push',
+    python_callable = xcom_push,
     dag = dag,
 )
 
@@ -226,4 +204,4 @@ for count in range(1, counts):
         python_callable=get_b_name_page,
         dag=dag
     )
-    check_review_start_notify >> truncate >> id_crawling >> drop_seq
+    check_review_start_notify >> truncate >> id_crawling >> xcom_push

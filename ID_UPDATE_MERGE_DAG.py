@@ -35,7 +35,7 @@ def id_merge_update(**kwargs):
         conn.close()
         kwargs['ti'].xcom_push(key='id_merge_update_end', value=False)
         
-def check_drop_seq(**kwargs):
+def check_id_crawling_end(**kwargs):
     check_danawa = True
     check_musinsa = True
     while check_danawa:
@@ -78,13 +78,13 @@ id_merge_update = PythonOperator(
 )
 
 # id 크롤링 실행 감지
-check_drop_seq = PythonOperator(
-    task_id = 'check_drop_seq',
-    python_callable = check_drop_seq,
+check_id_crawling_end = PythonOperator(
+    task_id = 'check_id_crawling_end',
+    python_callable = check_id_crawling_end,
     dag = dag,
 )
 
-check_drop_seq >> id_merge_update
+check_id_crawling_end >> id_merge_update
 
 
 

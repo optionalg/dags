@@ -244,8 +244,8 @@ def truncate(**kwargs):
     finally:
         conn.close()
 
-def drop_seq(**kwargs):
-    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=False)
+def xcom_push(**kwargs):
+    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=False, dag_id='line_notify_id_crawling')
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
@@ -295,9 +295,9 @@ truncate = PythonOperator(
 )
 
 # 테이블 초기화 DAG
-drop_seq = PythonOperator(
-    task_id = 'drop_seq',
-    python_callable = drop_seq,
+xcom_push = PythonOperator(
+    task_id = 'xcom_push',
+    python_callable = xcom_push,
     dag = dag,
 )
 
@@ -312,5 +312,5 @@ for count in range(1, count):
         op_kwargs={'count':count},
         dag=dag
     )
-    check_id_start_notify >> truncate >> id_crawling>> drop_seq
+    check_id_start_notify >> truncate >> id_crawling>> xcom_push
 
