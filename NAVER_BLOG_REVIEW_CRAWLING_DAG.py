@@ -274,13 +274,14 @@ def check_review_start_notify(**kwargs):
             
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
-
+today = datetime.today()
 # airflow DAG설정        
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(today.year, today.month, today.day, tzinfo=local_tz) - timedelta(hours=25),
     'catchup': False,
+    'provide_context': True
 }
 
 # DAG인스턴스 생성
