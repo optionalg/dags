@@ -129,16 +129,12 @@ def get_shoes_info(b_name, page, **kwargs):
             shoes_full_info.append([b_name, prod_id, prod_shono, prod_name, prod_category, prod_gender, prod_heel_size, prod_cost])
                 
     driver.close()
-    # 브랜드이름 파일명으로 저장
-    filename = f'/root/reviews/danawa_{b_name}_id.csv'
-    f = open(filename, 'w', encoding='utf-8', newline='')
-    csvWriter = csv.writer(f)
-    csvWriter.writerow(['brand','danawa_id','shono','modelname','category','shosex','heelsize','price_d'])
-    for i in shoes_full_info:
-        csvWriter.writerow(i)
-    f.close()
-
-    danawa = pd.DataFrame(f'/root/reviews/danawa_{b_name}_id.csv')
+    
+    danawa = pd.DataFrame(
+          data=shoes_full_info
+        , columns=['brand','danawa_id','shono','modelname','category','shosex','heelsize','price_d']
+    )
+    danawa = pd.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
     # 마리아디비로 전송
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
