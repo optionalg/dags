@@ -172,9 +172,8 @@ def get_shoes_info(category, page, **kwargs):
         data=prod_info
         , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
     )
-
+    
     # 무신사 데이터 편집
-
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '남 여 아동'].index, axis=0, inplace=True)
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '아동'].index, axis=0, inplace=True)
     musinsa_df.drop(musinsa_df[musinsa_df['shosex'] == '라이프'].index, axis=0, inplace=True)
@@ -202,9 +201,7 @@ def get_shoes_info(category, page, **kwargs):
 
     musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
 
-
     # 마리아디비로 전송
-
     engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", encoding='utf-8')
     conn = engine.connect()
     try:
