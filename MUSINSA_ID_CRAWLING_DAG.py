@@ -203,7 +203,7 @@ def get_shoes_info(category, page, **kwargs):
     musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
 
     # 마리아디비로 전송
-    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", charset='utf-8')
+    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", charset='utf8')
     conn = engine.connect()
     try:
         musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)

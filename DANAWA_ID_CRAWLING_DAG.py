@@ -136,7 +136,7 @@ def get_shoes_info(b_name, page, **kwargs):
     )
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
     # 마리아디비로 전송
-    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", charset='utf-8')
+    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot", charset='utf8')
     conn = engine.connect()
     try:
         danawa.to_sql(name='danawa_shoes', con=engine, if_exists='append', index=False)

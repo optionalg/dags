@@ -13,13 +13,14 @@ from sqlalchemy import create_engine
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from datetime import datetime, timedelta
 import sys
 import pendulum
 import requests
 
-def get_naver_brand_count():
+#--------------------------------실행 초기 설정 코드----------------------------------#
+
+def get_naver_brand_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
@@ -29,15 +30,17 @@ def get_naver_brand_count():
                 SELECT count(*) from naver_brand;
             """
             curs.execute(select_count)
-            count = curs.fetchone()[0]
+            counts = curs.fetchone()[0]
 
     finally:
         conn.close()
 
-    return count
+    return counts + 1
+    
+#--------------------------------크롤링 코드----------------------------------#
 
 # 신발 정보 가져오는 함수
-def get_shoes_review(b_name, page):
+def get_shoes_review(b_name, page, **kwargs):
 
     # 크롬 드라이버 옵션
     options = webdriver.ChromeOptions()
@@ -103,25 +106,19 @@ def get_shoes_review(b_name, page):
         csvWriter.writerow(w)
     f.close()
 
-def get_b_name_page():
+def get_b_name_page(count, **kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
 
     try:
         with conn.cursor() as curs:
 
-            nextval = """
-                SELECT NEXTVAL(seq_naver_brand);
-            """
-            curs.execute(nextval)
-            next_val = curs.fetchone()[0]
-
             select_brand = """
                 SELECT brand, page
                   FROM naver_brand
                  WHERE idx=%s;
             """
-            curs.execute(select_brand, next_val)
+            curs.execute(select_brand, count)
             b_name, page = curs.fetchone()
 
             get_shoes_review(b_name, page)
@@ -130,7 +127,7 @@ def get_b_name_page():
         conn.close()
 
 
-def truncate():
+def truncate(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
@@ -153,7 +150,7 @@ def truncate():
     finally:
         conn.close()
         
-def drop_seq():
+def drop_seq(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
 
     try:
@@ -167,6 +164,15 @@ def drop_seq():
     finally:
         conn.close()
         
+#--------------------------------에어 플로우 코드----------------------------------#
+
+def check_review_start_notify(**kwargs):
+    check = True
+    while check:
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        if check:
+            time.sleep(60*5)
+
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
 
@@ -174,8 +180,9 @@ local_tz = pendulum.timezone('Asia/Seoul')
 default_args = {
     'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime(2020, 10, 20, tzinfo=local_tz),
+    'start_date': datetime(today.year, today.month, today.day, tzinfo=local_tz) - timedelta(hours=25),
     'catchup': False,
+    'provide_context': True
 }    
     
 # DAG인스턴스 생성
@@ -187,16 +194,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
-)
-
-# 시작 감지
-start_notify_sensor = ExternalTaskSensor(
-      task_id='external_sensor'
-    , external_dag_id='line_notify_id_crawling'
-    , external_task_id='id_start_notify'
-    , mode='reschedule'
-    , dag=dag
+    , schedule_interval=timedelta(days=1)
 )
 
 # 테이블 초기화 DAG
@@ -206,6 +204,11 @@ truncate = PythonOperator(
     dag=dag,
 )
 
+check_review_start_notify = PythonOperator(
+    task_id='check_review_start_notify',
+    python_callable=check_review_start_notify,
+    dag=dag
+)
 # 테이블 초기화 DAG
 drop_seq = PythonOperator(
     task_id = 'drop_seq',
@@ -215,12 +218,12 @@ drop_seq = PythonOperator(
 
 # DAG 동적 생성
 # 크롤링 DAG
-count = get_naver_brand_count()
+counts = get_naver_brand_count()
 
-for count in range(0, count):
+for count in range(1, counts):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
         python_callable=get_b_name_page,
         dag=dag
     )
-    start_notify_sensor >> truncate >> id_crawling >> drop_seq
+    check_review_start_notify >> truncate >> id_crawling >> drop_seq
