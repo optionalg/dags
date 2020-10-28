@@ -137,8 +137,7 @@ def get_shoes_info(b_name, page, **kwargs):
     # 마리아디비로 전송
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
     try:
-        with conn.cursor() as curs:
-            danawa.to_sql(name='danawa_shoes', con=curs, if_exists='append', index=False)
+        danawa.to_sql(name='danawa_shoes', flavor='mysql', con=conn, if_exists='append', index=False)
     finally:
         conn.close()
 
