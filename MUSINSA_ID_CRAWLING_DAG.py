@@ -203,7 +203,7 @@ def get_shoes_info(category, page, **kwargs):
     # 마리아디비로 전송
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
     try:
-        musinsa_df.to_sql(name='musinsa_shoes', flavor='mysql', con=conn, if_exists='append', index=False)
+        musinsa_df.to_sql(name='musinsa_shoes', con=conn, if_exists='append', index=False)
     finally:
         conn.close()
 
