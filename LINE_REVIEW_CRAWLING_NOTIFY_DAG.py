@@ -22,14 +22,10 @@ def notify(context=None, xcom_push=None,**kwargs):
         }
     )
     if xcom_push != None:
-        kwargs['ti'].xcom_push(key=xcom_push, value=False, task_ids='initiate')
+        kwargs['ti'].xcom_push(key=xcom_push, value=False)
 
 def initiate(**kwargs):
     kwargs['ti'].xcom_push(key='review_crawling_start', value=True)
-    kwargs['ti'].xcom_push(key='danawa_review_crawling_end', value=True)
-    kwargs['ti'].xcom_push(key='musinsa_review_crawling_end', value=True)
-    kwargs['ti'].xcom_push(key='naver_shopping_crawling_end', value=True)
-    kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=True)
 
 def check_review_crawling(**kwargs):
     danawa_check = True
@@ -42,6 +38,15 @@ def check_review_crawling(**kwargs):
         musinsa_check = kwargs['ti'].xcom_pull(key='musinsa_review_crawling_end')
         if musinsa_check:
             time.sleep(60*5)
+    while musinsa_check:
+        musinsa_check = kwargs['ti'].xcom_pull(key='naver_shopping_crawling_end')
+        if musinsa_check:
+            time.sleep(60*5)
+    while musinsa_check:
+        musinsa_check = kwargs['ti'].xcom_pull(key='naver_blog_crawling_end')
+        if musinsa_check:
+            time.sleep(60*5)
+
             
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')

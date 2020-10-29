@@ -251,14 +251,17 @@ def truncate(**kwargs):
         conn.close()
 
 def xcom_push(**kwargs):
-    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=False, dag_id='line_notify_id_crawling')
+    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=False)
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
 def check_id_start_notify(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='id_crawling_start',dag_id='line_notify_id_crawling')
+        try:
+            check = kwargs['ti'].xcom_pull(key='id_crawling_start')
+        except:
+            pass
         if check:
             time.sleep(60*5)
         

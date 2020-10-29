@@ -33,17 +33,23 @@ def id_merge_update(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False, dag_id='line_notify_id_crawling')
+        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False)
         
 def check_id_crawling_end(**kwargs):
     check_danawa = True
     check_musinsa = True
     while check_danawa:
-        check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end',dag_id='line_notify_id_crawling')
+        try:
+            check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end')
+        except:
+            pass
         if check_danawa:
             time.sleep(60*5)
     while check_musinsa:
-        check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end',dag_id='line_notify_id_crawling')
+        try:
+            check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
+        except:
+            pass
         if check_musinsa:
             time.sleep(60*5)
 

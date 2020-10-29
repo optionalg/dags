@@ -23,18 +23,18 @@ def notify(context=None, xcom_push=None,**kwargs):
         }
     )
     if xcom_push != None:
-        kwargs['ti'].xcom_push(key=xcom_push, value=False, task_ids='initiate')
+        kwargs['ti'].xcom_push(key=xcom_push, value=False)
 
 def initiate(**kwargs):
     kwargs['ti'].xcom_push(key='id_crawling_start', value=True)
-    kwargs['ti'].xcom_push(key='danawa_id_crawling_end', value=True)
-    kwargs['ti'].xcom_push(key='musinsa_id_crawling_end', value=True)
-    kwargs['ti'].xcom_push(key='id_merge_update_end', value=True)
     
 def check_id_merge_update(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='id_merge_update_end',dag_id='id_merge_update')
+        try:
+            check = kwargs['ti'].xcom_pull(key='id_merge_update_end')
+        except:
+            pass
         if check:
             time.sleep(60*5)
 

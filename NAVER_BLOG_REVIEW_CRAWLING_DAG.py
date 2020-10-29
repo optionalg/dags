@@ -261,14 +261,14 @@ def update_excute_date(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=False, dag_id='line_notify_review_crawling')
+        kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=False)
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
 def check_review_start_notify(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start')
         if check:
             time.sleep(60*5)
             

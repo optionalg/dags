@@ -179,7 +179,7 @@ def update_excute_date(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='musinsa_review_crawling_end', value=False, dag_id='line_notify_review_crawling')
+        kwargs['ti'].xcom_push(key='musinsa_review_crawling_end', value=False)
 
 
 #--------------------------------에어 플로우 코드----------------------------------#
@@ -187,7 +187,10 @@ def update_excute_date(**kwargs):
 def check_review_start_notify(**kwargs):
     check = True
     while check:
-        check = kwargs['ti'].xcom_pull(key='review_crawling_start',dag_id='line_notify_review_crawling')
+        try:
+            check = kwargs['ti'].xcom_pull(key='review_crawling_start')
+        except:
+            pass
         if check:
             time.sleep(60*5)
             
