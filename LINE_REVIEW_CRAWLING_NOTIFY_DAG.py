@@ -44,6 +44,12 @@ def check_review_crawling(**kwargs):
         if not musinsa_check:
             time.sleep(60*5)
 
+def temp_id_end_wait(**kwargs):
+    id_crawling_check = False
+    while not id_crawling_check:
+        id_crawling_check = kwargs['ti'].xcom_pull(key='id_merge_update_end')
+        if not id_crawling_check:
+            time.sleep(60*5)
             
 # 서울 시간 기준으로 변경
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -75,7 +81,11 @@ review_start_notify = PythonOperator(
               ,'xcom_push':'review_crawling_start'},
     dag=dag
 )
-
+temp_id_end_wait = PythonOperator(
+    task_id='temp_id_end_wait',
+    python_callable=temp_id_end_wait,
+    dag=dag
+)
 check_review_crawling = PythonOperator(
     task_id='check_review_crawling',
     python_callable=check_review_crawling,
@@ -90,4 +100,4 @@ review_end_notify = PythonOperator(
 )
 
 # 처리 순서
-review_start_notify >> check_review_crawling >> review_end_notify
+temp_id_end_wait >> review_start_notify >> check_review_crawling >> review_end_notify
