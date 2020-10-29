@@ -90,7 +90,10 @@ def get_shoes_info(category, page, **kwargs):
         # 브랜드, id
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
         #id_and_brand = driver.find_element_by_css_selector('product_order_info > div.explan_product.product_info_section > ul > li:nth-child(1) > p.product_article_contents > strong')
-        prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
+        try:
+            prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
+        except:
+            continue
         prod_brand_text = prod_brand.text
         prod_brand_clean = prod_brand_text.replace(' ','').replace('(','').replace(')','')
         id_and_brand_text = id_and_brand.text
