@@ -132,10 +132,10 @@ def truncate(**kwargs):
                            database='footfoot')
     try:
         with conn.cursor() as curs:
-            #truncate_table = """
-            #    truncate table naver_shoes;
-            #"""
-            #curs.execute(truncate_table)
+            truncate_table = """
+                truncate table naver_shoes;
+            """
+            curs.execute(truncate_table)
     finally:
         conn.close()
         
