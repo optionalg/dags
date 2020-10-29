@@ -127,14 +127,17 @@ def get_shoes_info(category, page, **kwargs):
             size_text = []
             # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
             for regex_check in size_text_split:
-                try:
-                    temp = str(re.findall('2\d[0|5]',regex_check)[0])
-                    size_text.append(temp)
-                except:
-                    pass
-            join_size_text = '-'.join(size_text)  # 사이즈.
+                temp = str(re.findall('2\d[0|5]',regex_check)[0])
+                size_text.append(temp)
+                
+            min_size = int(size_text[0])  # 사이즈.
+            try:
+                max_size = int(size_text[-1])
+            except:
+                max_size = min_size
         except:
-            join_size_text = size
+            max_size = 0
+            max_size = 0
 
         # 성별
         gender = driver.find_element_by_class_name('txt_gender')
@@ -173,11 +176,11 @@ def get_shoes_info(category, page, **kwargs):
             modelname = prod_name_text # 모델명이 품번인 경우
 
             
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, prod_id_one, price_text])
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, min_size, max_size, int(prod_id_one), int(''.join(price_text.split(','))), (max_size - min_size)])
 
     musinsa_df = pd.DataFrame(
         data=prod_info
-        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'minsize', 'maxsize', 'musinsa_id', 'price_m', 'sizeunit']
     )
     
     # 무신사 데이터 편집
