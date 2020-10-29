@@ -293,7 +293,7 @@ dag = DAG(
     # 최대 실행 횟수
     , max_active_runs=1
     # 실행 주기
-    , schedule_interval=timedelta(minutes=5)
+    , schedule_interval=timedelta(days=1)
 )
 
 check_review_start_notify = PythonOperator(
