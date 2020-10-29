@@ -23,7 +23,7 @@ def notify(context=None, xcom_push=None,**kwargs):
         }
     )
     if xcom_push != None:
-        kwargs['ti'].xcom_push(key=xcom_push, value=False, task_id='initiate')
+        kwargs['ti'].xcom_push(key=xcom_push, value=False, task_ids='initiate')
 
 def initiate(**kwargs):
     kwargs['ti'].xcom_push(key='id_crawling_start', value=True)
