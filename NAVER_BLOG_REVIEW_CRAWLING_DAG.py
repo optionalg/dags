@@ -34,7 +34,7 @@ def get_shoes_count():
                 SELECT count(*) from shoes;
             """
             curs.execute(select_count)
-            counts = curs.fetchone()[0]
+            total = curs.fetchone()[0]
             
             select_model_name = """
                 SELECT brand, modelname
@@ -46,7 +46,7 @@ def get_shoes_count():
     finally:
         conn.close()
         
-    counts = int(count / 1000) + 1
+    counts = int(total / 1000) + 1
     
     prod_ids_all = []
     for i in range(0, len(names)):
@@ -248,7 +248,7 @@ def review_crawling(modelnames, client_id, client_secret):
         
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
-def update_excute_date():
+def update_excute_date(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
