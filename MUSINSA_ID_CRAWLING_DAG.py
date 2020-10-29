@@ -87,15 +87,6 @@ def get_shoes_info(category, page, **kwargs):
         # im.save(buffer, format='jpeg')
         # img_str = base64.b64encode(buffer.getvalue())
 
-        prod_name = driver.find_element_by_class_name('product_title')
-        prod_name_text = prod_name.text
-        try: # 영어 이름이 있는 경우 제거
-            prod_name_eng = driver.find_element_by_class_name('product_title_eng')
-            prod_name_eng_text = prod_name_eng.text
-            prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
-        except: # 영어 이름이 없는 경우 pass
-            pass
-
         # 브랜드, id
         id_and_brand = driver.find_element_by_class_name('product_article_contents')
         #id_and_brand = driver.find_element_by_css_selector('product_order_info > div.explan_product.product_info_section > ul > li:nth-child(1) > p.product_article_contents > strong')
@@ -108,7 +99,19 @@ def get_shoes_info(category, page, **kwargs):
             name_id = id_and_brand_text.split('/')[1].strip()  # 모델품번
         except :
             name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
-
+        
+        try:
+            prod_name = driver.find_element_by_class_name('product_title')
+            prod_name_text = prod_name.text
+        except:
+            prod_name_text = name_id
+        try: # 영어 이름이 있는 경우 제거
+            prod_name_eng = driver.find_element_by_class_name('product_title_eng')
+            prod_name_eng_text = prod_name_eng.text
+            prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
+        except: # 영어 이름이 없는 경우 pass
+            pass
+            
         # 사이즈
         try:
             size = driver.find_element_by_class_name('option1')
