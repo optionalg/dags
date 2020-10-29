@@ -137,7 +137,7 @@ def get_shoes_info(category, page, **kwargs):
                 max_size = min_size
         except:
             max_size = 0
-            max_size = 0
+            min_size = 0
 
         # 성별
         gender = driver.find_element_by_class_name('txt_gender')
