@@ -1,3 +1,4 @@
+'''
 import os
 import sys
 import urllib.request
@@ -235,5 +236,5 @@ def review_crawling():
     for shoes_keyword in shoes_name:
         search_blog_keyword = blog_brand + " " + shoes_keyword
         naver_blog_crawling(search_blog_keyword, 100)
-
+'''
     endTime = time.time() - startTime

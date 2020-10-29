@@ -1,3 +1,4 @@
+'''
 # crawling
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -181,3 +182,4 @@ for b_name, page in brand_info_split.items():
         dag=dag
     )
     sensor >> start_notify >> review_crawling >> end_notify
+'''

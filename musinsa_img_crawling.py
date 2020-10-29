@@ -1,3 +1,4 @@
+'''
 # crawling
 import pandas as pd
 import numpy
@@ -230,3 +231,4 @@ for name, page in category_info.items():
     )
     start_notify >> id_crawling>> end_notify
     
+'''

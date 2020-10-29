@@ -1,3 +1,4 @@
+'''
 # shared
 import requests
 
@@ -162,6 +163,4 @@ for category_name, category_page in category_info.items():
 # 다음과 같이도 가능하다 - set_upstream
 # crawling_code.set_upstream(start_notify)
 # end_notify.set_upstream(crawling_code)
-
-
-    
+'''

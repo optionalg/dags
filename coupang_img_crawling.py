@@ -1,3 +1,4 @@
+'''
 # crawling
 import pandas as pd
 import numpy
@@ -153,3 +154,4 @@ end_notify = PythonOperator(
 
 # 실행 순서 설정
 start_notify >> review_crawling_code >> end_notify
+'''

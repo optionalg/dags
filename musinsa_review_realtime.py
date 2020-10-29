@@ -1,3 +1,4 @@
+'''
 # crawling
 import pandas as pd
 import numpy as np
@@ -197,3 +198,4 @@ for name, page in category_info.items():
 
 #                 else:
 #                     print('오류')
+'''

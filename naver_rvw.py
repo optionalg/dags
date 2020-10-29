@@ -1,3 +1,4 @@
+'''
 import pandas as pd
 import numpy
 from selenium import webdriver
@@ -92,3 +93,4 @@ for brand_name_list,brand_num_list in naver_brand.items():
             for w in naver_info_and_rvw:
                 csvWriter.writerow(w)
             f.close()
+'''
