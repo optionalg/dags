@@ -33,7 +33,7 @@ def id_merge_update(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False)
+        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False, dag_id='line_notify_id_crawling')
         
 def check_id_crawling_end(**kwargs):
     check_danawa = True
