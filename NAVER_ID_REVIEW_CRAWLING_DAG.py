@@ -140,18 +140,18 @@ def truncate(**kwargs):
         conn.close()
         
 def xcom_push(**kwargs):
-    kwargs['ti'].xcom_push(key='naver_shopping_crawling_end', value=False)
+    kwargs['ti'].xcom_push(key='naver_shopping_crawling_end', value=True)
         
 #--------------------------------에어 플로우 코드----------------------------------#
 
 def check_review_start_notify(**kwargs):
-    check = True
-    while check:
+    check = False
+    while not check:
         try:
             check = kwargs['ti'].xcom_pull(key='review_crawling_start')
         except:
             pass
-        if check:
+        if not check:
             time.sleep(60*5)
 
 # 서울 시간 기준으로 변경

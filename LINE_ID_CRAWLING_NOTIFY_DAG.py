@@ -23,19 +23,16 @@ def notify(context=None, xcom_push=None,**kwargs):
         }
     )
     if xcom_push != None:
-        kwargs['ti'].xcom_push(key=xcom_push, value=False)
+        kwargs['ti'].xcom_push(key=xcom_push, value=True)
 
-def initiate(**kwargs):
-    kwargs['ti'].xcom_push(key='id_crawling_start', value=True)
-    
 def check_id_merge_update(**kwargs):
-    check = True
-    while check:
+    check = False
+    while not check:
         try:
             check = kwargs['ti'].xcom_pull(key='id_merge_update_end')
         except:
             pass
-        if check:
+        if not check:
             time.sleep(60*5)
 
 # 서울 시간 기준으로 변경
@@ -61,12 +58,7 @@ dag = DAG(
     # 실행 주기
     , schedule_interval=timedelta(days=14)
 )
-# 초기화
-initiate = PythonOperator(
-    task_id='initiate',
-    python_callable=initiate,
-    dag=dag
-)
+
 # ID 크롤링 시작 알림
 id_start_notify = PythonOperator(
     task_id='id_start_notify',
@@ -90,4 +82,4 @@ id_end_notify = PythonOperator(
 )
 
 # 처리 순서
-initiate >> id_start_notify >> check_id_merge_update >> id_end_notify
+id_start_notify >> check_id_merge_update >> id_end_notify

@@ -8,8 +8,8 @@ import pendulum
 import pymysql
 
 def id_merge_update(**kwargs):
-    conn = pymysql.connect(host='35.185.210.97', user='footfootbig', password='footbigmaria!',
-                           db='footfoot', charset='utf8')
+    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+                           database='footfoot')
 
     try:
         with conn.cursor() as curs:
@@ -33,24 +33,24 @@ def id_merge_update(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='id_merge_update_end', value=False)
+        kwargs['ti'].xcom_push(key='id_merge_update_end', value=True)
         
 def check_id_crawling_end(**kwargs):
-    check_danawa = True
-    check_musinsa = True
-    while check_danawa:
+    check_danawa = False
+    check_musinsa = False
+    while not check_danawa:
         try:
             check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end')
         except:
             pass
-        if check_danawa:
+        if not check_danawa:
             time.sleep(60*5)
-    while check_musinsa:
+    while not check_musinsa:
         try:
             check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
         except:
             pass
-        if check_musinsa:
+        if not check_musinsa:
             time.sleep(60*5)
 
 # 서울 시간 기준으로 변경
@@ -91,6 +91,4 @@ check_id_crawling_end = PythonOperator(
 )
 
 check_id_crawling_end >> id_merge_update
-
-
 

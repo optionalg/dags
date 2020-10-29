@@ -261,15 +261,15 @@ def update_excute_date(**kwargs):
 
     finally:
         conn.close()
-        kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=False)
+        kwargs['ti'].xcom_push(key='naver_blog_crawling_end', value=True)
 
 #--------------------------------에어 플로우 코드----------------------------------#
 
 def check_review_start_notify(**kwargs):
-    check = True
-    while check:
+    check = False
+    while not check:
         check = kwargs['ti'].xcom_pull(key='review_crawling_start')
-        if check:
+        if not check:
             time.sleep(60*5)
             
 # 서울 시간 기준으로 변경

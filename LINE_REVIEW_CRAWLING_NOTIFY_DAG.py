@@ -22,29 +22,26 @@ def notify(context=None, xcom_push=None,**kwargs):
         }
     )
     if xcom_push != None:
-        kwargs['ti'].xcom_push(key=xcom_push, value=False)
-
-def initiate(**kwargs):
-    kwargs['ti'].xcom_push(key='review_crawling_start', value=True)
+        kwargs['ti'].xcom_push(key=xcom_push, value=True)
 
 def check_review_crawling(**kwargs):
-    danawa_check = True
-    musinsa_check = True
-    while danawa_check:
+    danawa_check = False
+    musinsa_check = False
+    while not danawa_check:
         danawa_check = kwargs['ti'].xcom_pull(key='danawa_review_crawling_end')
-        if danawa_check:
+        if not danawa_check:
             time.sleep(60*5)
-    while musinsa_check:
+    while not musinsa_check:
         musinsa_check = kwargs['ti'].xcom_pull(key='musinsa_review_crawling_end')
-        if musinsa_check:
+        if not musinsa_check:
             time.sleep(60*5)
-    while musinsa_check:
+    while not musinsa_check:
         musinsa_check = kwargs['ti'].xcom_pull(key='naver_shopping_crawling_end')
-        if musinsa_check:
+        if not musinsa_check:
             time.sleep(60*5)
-    while musinsa_check:
+    while not musinsa_check:
         musinsa_check = kwargs['ti'].xcom_pull(key='naver_blog_crawling_end')
-        if musinsa_check:
+        if not musinsa_check:
             time.sleep(60*5)
 
             
@@ -70,12 +67,6 @@ dag = DAG(
     # 실행 주기
     , schedule_interval=timedelta(days=1)
 )
-# 초기화
-initiate = PythonOperator(
-    task_id='initiate',
-    python_callable=initiate,
-    dag=dag
-)
 # 리뷰 크롤링 시작 알림
 review_start_notify = PythonOperator(
     task_id='review_start_notify',
@@ -99,4 +90,4 @@ review_end_notify = PythonOperator(
 )
 
 # 처리 순서
-initiate >> review_start_notify >> check_review_crawling >> review_end_notify
+review_start_notify >> check_review_crawling >> review_end_notify
