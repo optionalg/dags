@@ -130,14 +130,9 @@ def get_shoes_info(category, page, **kwargs):
                 temp = str(re.findall('2\d[0|5]',regex_check)[0])
                 size_text.append(temp)
                 
-            min_size = int(size_text[0])  # 사이즈.
-            try:
-                max_size = int(size_text[-1])
-            except:
-                max_size = min_size
+            join_size_text = '-'.join(size_text)
         except:
-            max_size = 0
-            min_size = 0
+            join_size_text = '-'
 
         # 성별
         gender = driver.find_element_by_class_name('txt_gender')
@@ -176,11 +171,11 @@ def get_shoes_info(category, page, **kwargs):
             modelname = prod_name_text # 모델명이 품번인 경우
 
             
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, min_size, max_size, int(prod_id_one), int(''.join(price_text.split(','))), (max_size - min_size)])
+        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(',')))])
 
     musinsa_df = pd.DataFrame(
         data=prod_info
-        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'minsize', 'maxsize', 'musinsa_id', 'price_m', 'sizeunit']
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
     )
     
     # 무신사 데이터 편집
@@ -212,7 +207,7 @@ def get_shoes_info(category, page, **kwargs):
     musinsa_df.to_csv(f'/root/reviews/musinsa_{category}_id.csv')
 
     # 마리아디비로 전송
-    engine = create_engine("mysql+mysqldb://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot" + "?charset=utf8mb4")
+    engine = create_engine("mysql+pymysql://footfootbig:" + "footbigmaria!" + "@35.185.210.97/footfoot" + "?charset=utf8mb4")
     conn = engine.connect()
     try:
         musinsa_df.to_sql(name='musinsa_shoes', con=engine, if_exists='append', index=False)
