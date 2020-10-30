@@ -86,93 +86,94 @@ def get_shoes_info(category, page, **kwargs):
         #
         # im.save(buffer, format='jpeg')
         # img_str = base64.b64encode(buffer.getvalue())
-
-        # 브랜드, id
-        id_and_brand = driver.find_element_by_class_name('product_article_contents')
-        #id_and_brand = driver.find_element_by_css_selector('product_order_info > div.explan_product.product_info_section > ul > li:nth-child(1) > p.product_article_contents > strong')
         try:
-            prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
-        except:
-            continue
-        prod_brand_text = prod_brand.text
-        prod_brand_clean = prod_brand_text.replace(' ','').replace('(','').replace(')','')
-        id_and_brand_text = id_and_brand.text
-        # prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
-        try :
-            name_id = id_and_brand_text.split('/')[1].strip()  # 모델품번
-        except :
-            name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
-        
-        try:
-            prod_name = driver.find_element_by_class_name('product_title')
-            prod_name_text = prod_name.text
-        except:
-            prod_name_text = name_id
-        try: # 영어 이름이 있는 경우 제거
-            prod_name_eng = driver.find_element_by_class_name('product_title_eng')
-            prod_name_eng_text = prod_name_eng.text
-            prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
-        except: # 영어 이름이 없는 경우 pass
-            pass
+            # 브랜드, id
+            id_and_brand = driver.find_element_by_class_name('product_article_contents')
+            #id_and_brand = driver.find_element_by_css_selector('product_order_info > div.explan_product.product_info_section > ul > li:nth-child(1) > p.product_article_contents > strong')
+            try:
+                prod_brand = driver.find_element_by_css_selector('#page_product_detail > div.right_area.page_detail_product > div.right_contents.section_product_summary > div.product_info > p > a:nth-child(3)')
+            except:
+                continue
+            prod_brand_text = prod_brand.text
+            prod_brand_clean = prod_brand_text.replace(' ','').replace('(','').replace(')','')
+            id_and_brand_text = id_and_brand.text
+            # prod_brand = id_and_brand_text.split('/')[0]  # 브랜드
+            try :
+                name_id = id_and_brand_text.split('/')[1].strip()  # 모델품번
+            except :
+                name_id = id_and_brand_text # 품번이 없는 제품이 가끔 있음
             
-        # 사이즈
-        try:
-            size = driver.find_element_by_class_name('option1')
-        except: # 단일 사이즈인 제품이 아주 가끔 있어서 예외처리
-            size = '사이즈 정보 없음'
-        # 사이즈가 option1이 아닌 경우 예외처리
-        try:
-            size_texts = size.text
-            size_text_split = size_texts.split()[2:]
-            size_text = []
-            # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
-            for regex_check in size_text_split:
-                temp = str(re.findall('2\d[0|5]',regex_check)[0])
-                size_text.append(temp)
+            try:
+                prod_name = driver.find_element_by_class_name('product_title')
+                prod_name_text = prod_name.text
+            except:
+                prod_name_text = name_id
+            try: # 영어 이름이 있는 경우 제거
+                prod_name_eng = driver.find_element_by_class_name('product_title_eng')
+                prod_name_eng_text = prod_name_eng.text
+                prod_name_text = prod_name_text.replace(prod_name_eng_text, '')
+            except: # 영어 이름이 없는 경우 pass
+                pass
                 
-            join_size_text = '-'.join(size_text)
+            # 사이즈
+            try:
+                size = driver.find_element_by_class_name('option1')
+            except: # 단일 사이즈인 제품이 아주 가끔 있어서 예외처리
+                size = '사이즈 정보 없음'
+            # 사이즈가 option1이 아닌 경우 예외처리
+            try:
+                size_texts = size.text
+                size_text_split = size_texts.split()[2:]
+                size_text = []
+                # '옵션' '(3개남음)' 과 같은 이상한거 전부 제거하고 사이즈만 추출
+                for regex_check in size_text_split:
+                    temp = str(re.findall('2\d[0|5]',regex_check)[0])
+                    size_text.append(temp)
+                    
+                join_size_text = '-'.join(size_text)
+            except:
+                join_size_text = '-'
+
+            # 성별
+            gender = driver.find_element_by_class_name('txt_gender')
+            gender_text = gender.text # 성별
+
+            # 가격
+            try:
+                price = driver.find_element_by_css_selector('#goods_price > del')
+            except:
+                price = driver.find_element_by_css_selector('#goods_price')
+            price_text = price.text # 일반가격
+
+
+            # 모델 이름에서 품번, 광고성 문구, 색상 등 기타정보 제거
+            modelname = ''
+            if len(prod_name_text.split()) != 1: # 모델명이 품번이 아닌 경우
+                if prod_name_text.startswith('['): # [로 시작하는 광고 제거, 예)[키높이]
+                    try:
+                        if len(prod_name_text.split(']')) > 2: # []가 여러개 있는 경우
+                            modelname = ''.join(prod_name_text.split(']')[2:])
+                            if modelname == '': # []가 끝에 있는경우
+                                modelname = ''.join(prod_name_text.split(']')[1:-1])
+                        else:
+                            modelname = prod_name_text.split(']')[1]
+                    except: # 오타 있어서 [쏠라} 와 같은 것 때매 에러남
+                        modelname = prod_name_text.split('}')[1]
+
+                elif prod_name_text.startswith('('): # (로 시작하는 추가 정보가 있는 경우 예:(비브람솔)
+                    modelname = ''.join(prod_name_text.split(')')[1:])
+                else: # 광고성 괄호가 없는 경우
+                    modelname = prod_name_text
+
+                modelname = modelname.replace(name_id,'').replace('/','') # 품번 제거
+                modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
+            else:
+                modelname = prod_name_text # 모델명이 품번인 경우
+
+                
+            prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(',')))])
         except:
-            join_size_text = '-'
-
-        # 성별
-        gender = driver.find_element_by_class_name('txt_gender')
-        gender_text = gender.text # 성별
-
-        # 가격
-        try:
-            price = driver.find_element_by_css_selector('#goods_price > del')
-        except:
-            price = driver.find_element_by_css_selector('#goods_price')
-        price_text = price.text # 일반가격
-
-
-        # 모델 이름에서 품번, 광고성 문구, 색상 등 기타정보 제거
-        modelname = ''
-        if len(prod_name_text.split()) != 1: # 모델명이 품번이 아닌 경우
-            if prod_name_text.startswith('['): # [로 시작하는 광고 제거, 예)[키높이]
-                try:
-                    if len(prod_name_text.split(']')) > 2: # []가 여러개 있는 경우
-                        modelname = ''.join(prod_name_text.split(']')[2:])
-                        if modelname == '': # []가 끝에 있는경우
-                            modelname = ''.join(prod_name_text.split(']')[1:-1])
-                    else:
-                        modelname = prod_name_text.split(']')[1]
-                except: # 오타 있어서 [쏠라} 와 같은 것 때매 에러남
-                    modelname = prod_name_text.split('}')[1]
-
-            elif prod_name_text.startswith('('): # (로 시작하는 추가 정보가 있는 경우 예:(비브람솔)
-                modelname = ''.join(prod_name_text.split(')')[1:])
-            else: # 광고성 괄호가 없는 경우
-                modelname = prod_name_text
-
-            modelname = modelname.replace(name_id,'').replace('/','') # 품번 제거
-            modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
-        else:
-            modelname = prod_name_text # 모델명이 품번인 경우
-
-            
-        prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(',')))])
-
+            pass
     musinsa_df = pd.DataFrame(
         data=prod_info
         , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
