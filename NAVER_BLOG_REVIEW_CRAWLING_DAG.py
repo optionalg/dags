@@ -107,7 +107,7 @@ def get_blog_search_count(search_blog_keyword, display_count, client_id, client_
 
 
 # 리뷰 크롤링 함수(검색어, 한 페이지 당 결과 출력 수, 페이지 수)
-def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, client_id, client_secret):
+def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_count, client_id, client_secret, **kwargs):
     # 원본 url을 iframe 주소로 변환해서 담을 임시 리스트
     url_list = []
     # 리뷰 내용을 담을 리스트
@@ -238,7 +238,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
     result_df.to_csv(save_file_name + '_blog_Review.csv', encoding='utf-8')
 
 
-def review_crawling(modelnames, client_id, client_secret, **kwargs):
+def review_crawling_def(modelnames, client_id, client_secret, **kwargs):
     for blog_brand, shoes_keyword in modelnames:
         search_blog_keyword = blog_brand + " " + shoes_keyword
         # 검색 가능한 페이지 수
@@ -318,9 +318,6 @@ client_info = [
 counts, modelnames = get_shoes_count()
 info_n=0
 
-c_id = ""
-c_secret = ""
-
 for count in range(0, counts):
     if info_n == len(client_info):
         info_n=0
@@ -329,7 +326,7 @@ for count in range(0, counts):
     c_secret = client_info[info_n][1]
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
-        python_callable=review_crawling,
+        python_callable=review_crawling_def,
         op_kwargs={'modelnames':name
                   ,'client_id':c_id
                   ,'client_secret':c_secret},
