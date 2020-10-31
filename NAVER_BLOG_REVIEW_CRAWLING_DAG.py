@@ -240,12 +240,13 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
 
 def review_crawling_def(modelnames, client_id, client_secret, **kwargs):
     for blog_brand, shoes_keyword in modelnames:
-        search_blog_keyword = blog_brand + " " + shoes_keyword
-        # 검색 가능한 페이지 수
-        search_result_count = get_blog_search_count(search_blog_keyword, 100, client_id, client_secret)
-        # URL + 리뷰 크롤링
-        get_blog_post(search_blog_keyword, 100, search_result_count, client_id, client_secret)
-        
+        if not ((shoes_keyword == '') | (shoes_keyword == ' ')):
+            search_blog_keyword = blog_brand + " " + shoes_keyword
+            # 검색 가능한 페이지 수
+            search_result_count = get_blog_search_count(search_blog_keyword, 100, client_id, client_secret)
+            # URL + 리뷰 크롤링
+            get_blog_post(search_blog_keyword, 100, search_result_count, client_id, client_secret)
+            
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#
 
 def update_excute_date(**kwargs):
