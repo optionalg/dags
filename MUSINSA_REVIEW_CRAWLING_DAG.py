@@ -100,7 +100,7 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
                 url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
                 driver.get(url)
                 time.sleep(1)
-                driver.implicitly_wait(10)
+                driver.implicitly_wait(20)
                 prod_rvw_date = driver.find_elements_by_class_name('date')
                 #prod_name = driver.find_elements_by_class_name('list_info.p_name')
                 #prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
@@ -154,7 +154,7 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
                         f.close()
                         
                         # 확인 및 백업을 위해 로컬에 csv파일로 저장
-                        musinsa_reviews.append(prod_id, review_date, si, fo, ig, review)
+                        musinsa_reviews.append([prod_id, review_date, si, fo, ig, review])
 
             filename = f'/root/reviews/musinsa_{prod_id}_{style}.csv'
             with open(filename, 'w', encoding='utf-8', newline='') as f:
