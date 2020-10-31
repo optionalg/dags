@@ -20,9 +20,9 @@ def id_merge_update(**kwargs):
                 , d.price_d, m.minsize, m.maxsize, m.sizeunit, d.heelsize, m.musinsa_id, d.danawa_id
                   from musinsa_shoes as m
                 left outer join danawa_shoes as d
-                on m.shono=d.shono and m.brand=d.brand
+                on m.shono=d.shono and m.brand=d.brand)
                 UNION
-                select d.brand, d.shono, d.modelname, d.category, d.shosex, m.price_m, d.price_d
+                (select d.brand, d.shono, d.modelname, d.category, d.shosex, m.price_m, d.price_d
                 , m.minsize, m.maxsize, m.sizeunit, d.heelsize, m.musinsa_id, d.danawa_id
                   from musinsa_shoes as m
                 right outer join danawa_shoes as d
