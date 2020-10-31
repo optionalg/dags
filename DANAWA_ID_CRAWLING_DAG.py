@@ -125,6 +125,9 @@ def get_shoes_info(b_name, page, **kwargs):
             #   가격추출 
             prod_cost = r.text
             prod_cost = ''.join(prod_cost[:-1].split(','))
+            
+            if (prod_name == ' ') | (prod_name == ''):
+                prod_name = prod_shono
 
             shoes_full_info.append([b_name, prod_id, prod_shono, prod_name, prod_category, prod_gender, prod_heel_size, prod_cost])
                 

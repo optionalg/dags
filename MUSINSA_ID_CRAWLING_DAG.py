@@ -169,7 +169,9 @@ def get_shoes_info(category, page, **kwargs):
                 modelname = modelname.split('(')[0].split('-')[0] # 색상, 설명 제거
             else:
                 modelname = prod_name_text # 모델명이 품번인 경우
-
+            
+            if (modelname == '') | (modelname == ' '):
+                modelname = name_id
                 
             prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(',')))])
         except:
