@@ -25,7 +25,7 @@ import pymysql
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
-def get_shoes_count():
+def get_shoes_count(**kwargs):
     conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
@@ -67,7 +67,7 @@ def get_shoes_count():
 #--------------------------------크롤링 코드----------------------------------#
 
 # 검색 가능한 페이지 수, 포스팅 수 분석(검색어, 한 페이지 당 결과 출력 수)
-def get_blog_search_count(search_blog_keyword, display_count, client_id, client_secret):
+def get_blog_search_count(search_blog_keyword, display_count, client_id, client_secret, **kwargs):
     # 키워드에 사이즈 내용이 포함된 포스팅 검색어
     search_keyword = urllib.parse.quote(search_blog_keyword + " +사이즈")
     # json 결과
@@ -238,7 +238,7 @@ def get_blog_post(search_blog_keyword, display_count, search_result_blog_page_co
     result_df.to_csv(save_file_name + '_blog_Review.csv', encoding='utf-8')
 
 
-def review_crawling(modelnames, client_id, client_secret):
+def review_crawling(modelnames, client_id, client_secret, **kwargs):
     for blog_brand, shoes_keyword in modelnames:
         search_blog_keyword = blog_brand + " " + shoes_keyword
         # 검색 가능한 페이지 수
