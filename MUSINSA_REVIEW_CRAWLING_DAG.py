@@ -155,13 +155,13 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
                         
                         # 확인 및 백업을 위해 로컬에 csv파일로 저장
                         musinsa_reviews.append(prod_id, review_date, si, fo, ig, review)
-            csvwriter = csv.writer(f)
+
             filename = f'/root/reviews/musinsa_{prod_id}_{style}.csv'
-            f = open(filename, 'w', encoding='utf-8', newline='')
-            csvwriter.writerow(['musinsa_id','review_date','size','foot','feel','review'])
-            for i in musinsa_reviews:
-                csvwriter.writerow(i)
-            f.close()
+            with open(filename, 'w', encoding='utf-8', newline='') as f:
+                csvwriter = csv.writer(f)
+                csvwriter.writerow(['musinsa_id','review_date','size','foot','feel','review'])
+                for i in musinsa_reviews:
+                    csvwriter.writerow(i)
     driver.close()
 
 #--------------------------------크롤링 종료시 실행 코드----------------------------------#

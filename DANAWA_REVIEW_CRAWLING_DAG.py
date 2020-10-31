@@ -99,13 +99,13 @@ def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date, **kwargs):
                     f.close()
                     danawa_reviews.append([prod_id,review_date,review])
         # 확인 및 백업을 위해 로컬에 csv파일로 저장
-        csvwriter = csv.writer(f)
+
         filename = f'/root/reviews/danawa_{prod_id}.csv'
-        f = open(filename, 'w', encoding='utf-8', newline='')
-        csvwriter.writerow(['danawa_id','review_date','review'])
-        for i in danawa_reviews:
-            csvwriter.writerow(i)
-        f.close()
+        with open(filename, 'w', encoding='utf-8', newline='') as f:
+            csvwriter = csv.writer(f)
+            csvwriter.writerow(['danawa_id','review_date','review'])
+            for i in danawa_reviews:
+                csvwriter.writerow(i)
     driver.close()
 
 def get_b_name_prod_ids(last_excute_date, limit_date, count, **kwargs):
