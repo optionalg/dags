@@ -333,12 +333,15 @@ info_n=0
 for count in range(0, counts):
     if info_n == len(client_info):
         info_n=0
+    name = modelnames[count]
+    c_id = client_info[info_n][0]
+    c_secret = client_info[info_n][1]
     review_crawling = PythonOperator(
         task_id='{0}_review_crawling'.format(count),
         python_callable=review_crawling,
-        op_kwargs={'modelnames':modelnames[count]
-                  ,'client_id':client_info[info_n][0]
-                  ,'client_secret':client_info[info_n][1]},
+        op_kwargs={'modelnames':name
+                  ,'client_id':c_id
+                  ,'client_secret':c_secret},
         dag=dag
     )
     info_n = info_n + 1
