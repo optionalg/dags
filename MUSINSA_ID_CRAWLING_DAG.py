@@ -258,7 +258,7 @@ def check_id_start_notify(**kwargs):
     check = False
     while not check:
         try:
-            check = kwargs['ti'].xcom_pull(key='id_crawling_start')
+            check = kwargs['ti'].xcom_pull(key='id_crawling_start', dag_id='line_notify_id_crawling')
         except:
             pass
         if not check:

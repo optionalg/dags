@@ -148,7 +148,7 @@ def check_review_start_notify(**kwargs):
     check = False
     while not check:
         try:
-            check = kwargs['ti'].xcom_pull(key='review_crawling_start')
+            check = kwargs['ti'].xcom_pull(key='review_crawling_start', dag_id='line_notify_review_crawling')
         except:
             pass
         if not check:

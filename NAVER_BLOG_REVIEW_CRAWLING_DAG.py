@@ -268,7 +268,7 @@ def update_excute_date(**kwargs):
 def check_review_start_notify(**kwargs):
     check = False
     while not check:
-        check = kwargs['ti'].xcom_pull(key='review_crawling_start')
+        check = kwargs['ti'].xcom_pull(key='review_crawling_start', dag_id='line_notify_review_crawling')
         if not check:
             time.sleep(60*5)
             

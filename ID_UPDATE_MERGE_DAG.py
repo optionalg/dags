@@ -40,14 +40,14 @@ def check_id_crawling_end(**kwargs):
     check_musinsa = False
     while not check_danawa:
         try:
-            check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end')
+            check_danawa = kwargs['ti'].xcom_pull(key='danawa_id_crawling_end', dag_id='danawa_id_crawling_to_sql')
         except:
             pass
         if not check_danawa:
             time.sleep(60*5)
     while not check_musinsa:
         try:
-            check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end')
+            check_musinsa = kwargs['ti'].xcom_pull(key='musinsa_id_crawling_end', dag_id='musinsa_id_crawling_to_sql')
         except:
             pass
         if not check_musinsa:
