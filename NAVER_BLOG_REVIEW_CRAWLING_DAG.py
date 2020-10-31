@@ -314,22 +314,13 @@ client_info = [
     , ['EjgecVNLHY564tDBd8UJ','UCPJhexfCx'],['r5i6bGgzVYHkXsMqIwiC','BV6YkPWwPy']
 ]
 
-# client_id = "I__kb5ol4fePl1HXXnQ5"
-# client_secret = "UbUqlQ3axZ"
-# client_id = "xFG1dvdm1Sl4jt8BpVN0"
-# client_secret = "puflFFlylt"
-# client_id = "Lut8QTWuClANVW1KG1j"
-# client_secret = "Xd92q3vFYi"
-# client_id = "7NHschBJB0ztLJTbhgrF"
-# client_secret = "uH4BLvwpft"
-# client_id = "EjgecVNLHY564tDBd8UJ"
-# client_secret = "UCPJhexfCx"
-# client_id = "r5i6bGgzVYHkXsMqIwiC"
-# client_secret = "BV6YkPWwPy"
-
 # DAG 동적 생성
 counts, modelnames = get_shoes_count()
 info_n=0
+
+c_id = ""
+c_secret = ""
+
 for count in range(0, counts):
     if info_n == len(client_info):
         info_n=0
