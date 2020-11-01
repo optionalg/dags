@@ -14,6 +14,11 @@ def id_merge_update(**kwargs):
     try:
         with conn.cursor() as curs:
             sql = """
+                truncate table shoes;
+            """
+            curs.execute(sql)
+            
+            sql2 = """
                 insert ignore into shoes(brand, shono, modelname, category, shosex, price_m
                 , price_d, minsize, maxsize, sizeunit, heelsize, musinsa_id, danawa_id)
                 (select m.brand, m.shono, m.modelname, m.category, m.shosex, m.price_m
@@ -28,7 +33,7 @@ def id_merge_update(**kwargs):
                 right outer join danawa_shoes as d
                     on m.shono=d.shono and m.brand=d.brand);
             """
-            curs.execute(sql)
+            curs.execute(sql2)
             conn.commit()
 
     finally:
