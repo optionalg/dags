@@ -205,6 +205,7 @@ for count in range(1, counts):
     id_crawling = PythonOperator(
         task_id='{0}_id_crawling'.format(count),
         python_callable=get_b_name_page,
+        op_kwargs={'count':count},
         dag=dag
     )
     check_review_start_notify >> truncate >> id_crawling >> xcom_push
