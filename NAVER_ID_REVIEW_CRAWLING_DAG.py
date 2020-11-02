@@ -114,7 +114,7 @@ def get_b_name_page(count, **kwargs):
         with conn.cursor() as curs:
 
             select_brand = """
-                SELECT brand, page
+                SELECT brand, num
                   FROM naver_brand
                  WHERE idx=%s;
             """
