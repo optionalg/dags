@@ -1,15 +1,12 @@
 # crawling
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 import re
 import time
 import csv
 import pandas as pd
 import numpy as np
-import datetime as dt
 import pymysql
-import glob, os
 from sqlalchemy import create_engine
 
 # airflow 

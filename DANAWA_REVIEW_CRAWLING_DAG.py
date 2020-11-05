@@ -1,22 +1,24 @@
+# common
+import re
+import time
+import requests
+from datetime import datetime, timedelta
+
 # crawling
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-import re
-import time
 import csv
-import pandas as pd
-import numpy as np
-import datetime as dt
-import pymysql
 
 # airflow 
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from datetime import datetime, timedelta
 import sys
 import pendulum
-import requests
+import pymysql
+
+# preprocessing
+import pandas as pd
+import numpy as np
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
