@@ -73,19 +73,8 @@ def get_shoes_info(category, page, **kwargs):
         time.sleep(1)
         driver.implicitly_wait(10)
 
-        # 무신사 대표 이미지 가져와서 현재 디렉토리에 저장하는 코드(디렉토리 설정해주세요.)
-        # prod_main_img = driver.find_element_by_css_selector('#bigimg')
-        # img_url = prod_main_img.get_attribute('src')
-        # r = requests.get(img_url)
-        # file = open("musinsa_img_{}.jpg".format(str(prod_id_one)), "wb")
-        # file.write(r.content)
-        # file.close()
-        #
-        # buffer = BytesIO()
-        # im = Image.open("musinsa_img_{}.jpg".format(prod_id_one))
-        #
-        # im.save(buffer, format='jpeg')
-        # img_str = base64.b64encode(buffer.getvalue())
+        prod_main_img = driver.find_element_by_css_selector('#bigimg')
+        img_url = prod_main_img.get_attribute('src')
         try:
             # 브랜드, id
             id_and_brand = driver.find_element_by_class_name('product_article_contents')
@@ -173,12 +162,12 @@ def get_shoes_info(category, page, **kwargs):
             if (modelname == '') | (modelname == ' '):
                 modelname = name_id
                 
-            prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(',')))])
+            prod_info.append([category, prod_brand_clean, name_id, modelname, gender_text, join_size_text, int(prod_id_one), int(''.join(price_text.split(','))), img_url])
         except:
             pass
     musinsa_df = pd.DataFrame(
         data=prod_info
-        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m']
+        , columns=['category', 'brand', 'shono', 'modelname', 'shosex', 'size', 'musinsa_id', 'price_m', 'img_src']
     )
     
     # 무신사 데이터 편집

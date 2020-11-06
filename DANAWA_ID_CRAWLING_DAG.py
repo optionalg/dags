@@ -84,7 +84,10 @@ def get_shoes_info(b_name, page, **kwargs):
         prod_names = driver.find_elements_by_class_name('click_log_product_standard_title_')
         prod_infos = driver.find_elements_by_class_name('spec_list')
         prod_costs = driver.find_elements_by_class_name('click_log_product_standard_price_')
-        for q,w,e,r in zip(prod_ids,prod_names,prod_infos,prod_costs):
+        prod_imgs = driver.find_elements_by_class_name('click_log_product_standard_img_')
+        for q,w,e,r,t in zip(prod_ids,prod_names,prod_infos,prod_costs,prod_imgs):
+            #   이미지 src를 text로 추출
+            prod_img_src = t.get_attribute('src').split('?')[0]
             #   정보에서 추출
             prod_info = e.text
             prod_gender = ''
@@ -126,13 +129,13 @@ def get_shoes_info(b_name, page, **kwargs):
             if (prod_name == ' ') | (prod_name == ''):
                 prod_name = prod_shono
 
-            shoes_full_info.append([b_name, prod_id, prod_shono, prod_name, prod_category, prod_gender, prod_heel_size, prod_cost])
+            shoes_full_info.append([b_name, prod_id, prod_shono, prod_name, prod_category, prod_gender, prod_heel_size, prod_cost, prod_img_src])
                 
     driver.close()
     
     danawa = pd.DataFrame(
           data=shoes_full_info
-        , columns=['brand','danawa_id','shono','modelname','category','shosex','heelsize','price_d']
+        , columns=['brand','danawa_id','shono','modelname','category','shosex','heelsize','price_d', 'img_src']
     )
     danawa.to_csv(f'/root/reviews/danawa_{b_name}_id.csv')
     # 마리아디비로 전송

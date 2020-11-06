@@ -19,6 +19,7 @@ import pymysql
 # preprocessing
 import pandas as pd
 import numpy as np
+from ks4r.ks4r import Summarizer
 
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
@@ -73,8 +74,19 @@ def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date, **kwargs):
     driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',options=options)
 
     for prod_id in prod_ids:
+        conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+        try:
+            with conn.cursor() as curs:
+                select_count = """
+                    SELECT review_count from danawa_shoes where danawa_id=%s;
+                """
+                curs.execute(select_count, prod_id)
+                initial_count = curs.fetchone()[0]
+        finally:
+            conn.close()
         danawa_reviews = []
         page = 0
+        review_count = 0
         while True:
             page = page + 1
             url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(prod_id)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
@@ -91,23 +103,58 @@ def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date, **kwargs):
             except:
                 pass
             for q,w in zip(rvw_date,rvw_list):
-                filename ='/home/reviews/danawa.txt'
-                f = open(filename, 'a', encoding='utf-8', newline='')
-                review_date = q.text
                 check_date = datetime.strptime(review_date,'%Y.%m.%d')
                 if (last_excute_date < check_date) & (check_date < limit_date):
+                    review_count = review_count + 1
+                    filename ='/home/reviews/danawa.txt'
+                    f = open(filename, 'a', encoding='utf-8', newline='')
+                    review_date = q.text
                     review = w.text
                     f.write(f'{prod_id} {review_date} {review}\n')
                     f.close()
                     danawa_reviews.append([prod_id,review_date,review])
+                    
+        conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+        try:
+            with conn.cursor() as curs:
+                if initial_count < 20:
+                    total_review = []
+                    for info in danawa_reviews:
+                        total_review.append(info[2])
+                    review4summary = '.'.join(total_review)
+                    if (initial_count + review_count) > 19:
+                        summarizer = Summarizer()
+                        summary = '\n'.join(summarizer(review4summary))
+                        set_summaries = """
+                            UPDATE danawa_shoes SET summaries=%s, review_count=%s WHERE danawa_id=%s;
+                        """
+                        curs.execute(set_summaries, (summary, (initial_count + review_count), prod_id))
+                    else:
+                        get_tmp_review = """
+                            SELECT tmp_review FROM danawa_shoes WHERE danawa_id=%s
+                        """
+                        curs.execute(get_tmp_review, (prod_id))
+                        tmp_review = curs.fetchone()[0]
+                        update_tmp= """
+                            UPDATE danawa_shoes SET tmp_review=%s, review_count=%s WHERE danawa_id=%s;
+                        """
+                        curs.execute(update_tmp, ((review4summary + tmp_review), (initial_count + review_count), prod_id))
+                else:
+                    update_count= """
+                        UPDATE danawa_shoes SET review_count=%s WHERE danawa_id=%s;
+                    """
+                    curs.execute(update_count, ((initial_count + review_count), prod_id))
+        finally:
+            conn.close()        
+            
         # 확인 및 백업을 위해 로컬에 csv파일로 저장
-
         filename = f'/root/reviews/danawa_{prod_id}.csv'
         with open(filename, 'w', encoding='utf-8', newline='') as f:
             csvwriter = csv.writer(f)
             csvwriter.writerow(['danawa_id','review_date','review'])
             for i in danawa_reviews:
                 csvwriter.writerow(i)
+        
     driver.close()
 
 def get_b_name_prod_ids(last_excute_date, limit_date, count, **kwargs):

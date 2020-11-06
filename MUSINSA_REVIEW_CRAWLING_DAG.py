@@ -93,8 +93,18 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
 
     for style in style_list:
         for prod_id in prod_ids:
+            try:
+                with conn.cursor() as curs:
+                    select_count = """
+                        SELECT review_count from musinsa_shoes where musinsa_id=%s;
+                    """
+                    curs.execute(select_count, prod_id)
+                    initial_count = curs.fetchone()[0]
+            finally:
+                conn.close()
             musinsa_reviews = []
             page_num = 0
+            review_count = 0
             while True:
                 page_num = page_num + 1
                 url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
@@ -155,7 +165,38 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
                         
                         # 확인 및 백업을 위해 로컬에 csv파일로 저장
                         musinsa_reviews.append([prod_id, review_date, si, fo, ig, review])
-
+            conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!', database='footfoot')
+            try:
+                with conn.cursor() as curs:
+                    if initial_count < 20:
+                        total_review = []
+                        for info in musinsa_reviews:
+                            total_review.append(info[5])
+                        review4summary = '.'.join(total_review)
+                        if (initial_count + review_count) > 19:
+                            summarizer = Summarizer()
+                            summary = '\n'.join(summarizer(review4summary))
+                            set_summaries = """
+                                UPDATE musinsa_shoes SET summaries=%s, review_count=%s WHERE musinsa_id=%s;
+                            """
+                            curs.execute(set_summaries, (summary, (initial_count + review_count), prod_id))
+                        else:
+                            get_tmp_review = """
+                                SELECT tmp_review FROM musinsa_shoes WHERE musinsa_id=%s
+                            """
+                            curs.execute(get_tmp_review, (prod_id))
+                            tmp_review = curs.fetchone()[0]
+                            update_tmp= """
+                                UPDATE musinsa_shoes SET tmp_review=%s, review_count=%s WHERE musinsa_id=%s;
+                            """
+                            curs.execute(update_tmp, ((review4summary + tmp_review), (initial_count + review_count), prod_id))
+                    else:
+                        update_count= """
+                            UPDATE musinsa_shoes SET review_count=%s WHERE musinsa_id=%s;
+                        """
+                        curs.execute(update_count, ((initial_count + review_count), prod_id))
+            finally:
+                conn.close()    
             filename = f'/root/reviews/musinsa_{prod_id}_{style}.csv'
             with open(filename, 'w', encoding='utf-8', newline='') as f:
                 csvwriter = csv.writer(f)
