@@ -107,13 +107,14 @@ def get_shoes_review(prod_ids, last_excute_date, limit_date, **kwargs):
             review_count = 0
             while True:
                 page_num = page_num + 1
-                url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'+str(style)+'/'+str(prod_id)+'/0/'+str(page_num)
+                url = 'https://store.musinsa.com/app/reviews/goods_estimate_list/'\
+                      +str(style)\
+                      +'/'+str(prod_id)\
+                      +'/0/'+str(page_num)
                 driver.get(url)
                 time.sleep(1)
                 driver.implicitly_wait(20)
                 prod_rvw_date = driver.find_elements_by_class_name('date')
-                #prod_name = driver.find_elements_by_class_name('list_info.p_name')
-                #prod_cust_buy_size = driver.find_elements_by_class_name('txt_option')
                 prod_size_jud = driver.find_elements_by_css_selector('body > div > div > div > div.postRight > div > div.prd-level-each > ul')
                 prod_rvw = driver.find_elements_by_class_name('content-review')
                 

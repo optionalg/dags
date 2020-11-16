@@ -89,7 +89,9 @@ def get_shoes_review(b_name, prod_ids, last_excute_date, limit_date, **kwargs):
         review_count = 0
         while True:
             page = page + 1
-            url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='+str(prod_id)+'&cate1Code=1824&page='+str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
+            url = 'http://prod.danawa.com/info/dpg/ajax/companyProductReview.ajax.php?t=0.10499996477784657&prodCode='\
+                  +str(prod_id)+'&cate1Code=1824&page='\
+                  +str(page)+'&limit=100&score=0&sortType=&usefullScore=Y&innerKeyword=&subjectWord=0&subjectWordString=&subjectSimilarWordString=&_=1600608005961'
             driver.get(url)
             time.sleep(1)
             driver.implicitly_wait(10)

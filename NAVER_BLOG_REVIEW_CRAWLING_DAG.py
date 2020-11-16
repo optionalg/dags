@@ -26,10 +26,10 @@ import pymysql
 #--------------------------------실행 초기 설정 코드----------------------------------#
 
 def get_shoes_count(**kwargs):
-    conn = pymysql.connect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
+    conn = pyect(host='35.185.210.97', port=3306, user='footfootbig', password='footbigmaria!',
                            database='footfoot')
     try:
-        with conn.cursor() as curs:
+        with conn.cursor() as curs:mysql.conn
             select_count = """
                 SELECT count(*) from shoes;
             """
